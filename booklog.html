@@ -109,15 +109,15 @@
       background: #f7f7f7;
     }
 
-    /* rating select: 노란 별 표시 */
+    /* rating select */
     .rating-select {
-      color: #f5b400;
+      color: #000; /* 기본은 검정 */
     }
     .rating-select option {
-      color: #f5b400;
+      color: #000; /* 옵션 기본도 검정 */
     }
-    .rating-select option[value=""] {
-      color: #555;
+    .rating-select option.star {
+      color: #f5b400; /* 별 옵션만 노란색 */
     }
 
     /* table */
@@ -206,7 +206,7 @@
         </div>
         <div class="form-group">
           <label for="genre">분야</label>
-          <input type="text" id="genre" placeholder="자유 입력" />
+          <input type="text" id="genre" />
         </div>
       </div>
 
@@ -223,11 +223,11 @@
           <label for="rating">별점</label>
           <select id="rating" class="rating-select">
             <option value="">별점 선택</option>
-            <option value="1">★☆☆☆☆</option>
-            <option value="2">★★☆☆☆</option>
-            <option value="3">★★★☆☆</option>
-            <option value="4">★★★★☆</option>
-            <option value="5">★★★★★</option>
+            <option value="1" class="star">★☆☆☆☆</option>
+            <option value="2" class="star">★★☆☆☆</option>
+            <option value="3" class="star">★★★☆☆</option>
+            <option value="4" class="star">★★★★☆</option>
+            <option value="5" class="star">★★★★★</option>
           </select>
         </div>
       </div>
@@ -239,7 +239,6 @@
             <label><input type="radio" name="format" value="ebook" /> e북</label>
             <label><input type="radio" name="format" value="paper" /> 종이책</label>
             <label><input type="radio" name="format" value="audio" /> 오디오북</label>
-            <label><input type="radio" name="format" value="" checked /> 미선택</label>
           </div>
         </div>
         <div class="form-group">
@@ -365,14 +364,8 @@
     function setFormatValue(val) {
       const radios = document.querySelectorAll("input[name='format']");
       radios.forEach(r => {
-        if (r.value === val) r.checked = true;
+        r.checked = (r.value === val);
       });
-      // 값이 없으면 "미선택" 라디오에 체크
-      if (!val) {
-        radios.forEach(r => {
-          if (r.value === "") r.checked = true;
-        });
-      }
     }
 
     function getStatusValue() {
@@ -741,4 +734,3 @@
   </script>
 </body>
 </html>
-
