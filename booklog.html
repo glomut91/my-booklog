@@ -111,13 +111,49 @@
 
     /* rating select */
     .rating-select {
-      color: #000; /* 기본은 검정 */
+      color: #000;
     }
     .rating-select option {
-      color: #000; /* 옵션 기본도 검정 */
+      color: #000;
     }
+    /* 별 옵션도 모두 검정색 */
     .rating-select option.star {
-      color: #f5b400; /* 별 옵션만 노란색 */
+      color: #000;
+    }
+
+    /* filters */
+    .filters {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+    }
+    .filters-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 120px;
+      flex: 1;
+    }
+    .filter-group label {
+      margin-bottom: 2px;
+      font-size: 0.78rem;
+      color: #555;
+    }
+    .filters-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
     }
 
     /* table */
@@ -205,12 +241,16 @@
           <input type="text" id="title" required />
         </div>
         <div class="form-group">
-          <label for="genre">분야</label>
-          <input type="text" id="genre" />
+          <label for="author">작가</label>
+          <input type="text" id="author" />
         </div>
       </div>
 
       <div class="form-row">
+        <div class="form-group">
+          <label for="genre">분야</label>
+          <input type="text" id="genre" />
+        </div>
         <div class="form-group">
           <label for="start-date">읽기 시작한 날짜</label>
           <input type="date" id="start-date" />
@@ -257,12 +297,62 @@
       <input type="hidden" id="edit-index" value="" />
     </form>
 
+    <!-- 필터 영역 -->
+    <div class="filters">
+      <div class="filters-title">필터</div>
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="filter-year">연도(완독 기준)</label>
+          <select id="filter-year">
+            <option value="">전체</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-author">작가</label>
+          <select id="filter-author">
+            <option value="">전체</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-genre">분야</label>
+          <select id="filter-genre">
+            <option value="">전체</option>
+          </select>
+        </div>
+      </div>
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="filter-format">형태</label>
+          <select id="filter-format">
+            <option value="">전체</option>
+            <option value="ebook">e북</option>
+            <option value="paper">종이책</option>
+            <option value="audio">오디오북</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-rating">별점</label>
+          <select id="filter-rating" class="rating-select">
+            <option value="">전체</option>
+            <option value="1" class="star">★☆☆☆☆</option>
+            <option value="2" class="star">★★☆☆☆</option>
+            <option value="3" class="star">★★★☆☆</option>
+            <option value="4" class="star">★★★★☆</option>
+            <option value="5" class="star">★★★★★</option>
+          </select>
+        </div>
+      </div>
+      <div class="filters-actions">
+        <button type="button" class="secondary" id="filter-reset-btn">필터 초기화</button>
+      </div>
+    </div>
+
     <div id="empty-list">아직 등록된 책이 없습니다.</div>
     <table id="book-table" style="display:none;">
       <thead>
         <tr>
-          <th>제목 / 분야</th>
-          <th>기간</th>
+          <th>제목 / 작가 / 분야</th>
+          <th>기간 / 상태</th>
           <th class="center">별점</th>
           <th class="center">형태</th>
           <th class="center">작업</th>
@@ -320,6 +410,7 @@
 
     const form = document.getElementById("book-form");
     const titleInput = document.getElementById("title");
+    const authorInput = document.getElementById("author");
     const genreInput = document.getElementById("genre");
     const startInput = document.getElementById("start-date");
     const finishInput = document.getElementById("finish-date");
@@ -342,6 +433,14 @@
     const monthEmpty = document.getElementById("month-empty");
 
     const statusRadios = document.querySelectorAll("input[name='status']");
+
+    // 필터 요소
+    const filterYear = document.getElementById("filter-year");
+    const filterAuthor = document.getElementById("filter-author");
+    const filterGenre = document.getElementById("filter-genre");
+    const filterFormat = document.getElementById("filter-format");
+    const filterRating = document.getElementById("filter-rating");
+    const filterResetBtn = document.getElementById("filter-reset-btn");
 
     /* 탭 전환 */
     document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -443,6 +542,7 @@
         return;
       }
 
+      const author = authorInput.value.trim();
       const genre = genreInput.value.trim();
       const status = getStatusValue();
       const startDate = startInput.value || "";
@@ -459,7 +559,7 @@
         if (!ok) return;
       }
 
-      const book = { title, genre, startDate, finishDate, rating, format, status };
+      const book = { title, author, genre, startDate, finishDate, rating, format, status };
 
       const books = loadBooks();
       const editIndex = editIndexInput.value;
@@ -474,8 +574,120 @@
       renderList();
     });
 
+    // 필터 옵션 동적 구성
+    function updateFilterOptions(books) {
+      const years = new Set();
+      const authors = new Set();
+      const genres = new Set();
+      const ratings = new Set();
+
+      books.forEach(b => {
+        if (b.finishDate && /^\d{4}/.test(b.finishDate)) {
+          years.add(b.finishDate.slice(0,4));
+        }
+        if (b.author) authors.add(b.author);
+        if (b.genre) genres.add(b.genre);
+        if (b.rating != null) ratings.add(b.rating);
+      });
+
+      // 현재 선택 유지용
+      const currentYear = filterYear.value;
+      const currentAuthor = filterAuthor.value;
+      const currentGenre = filterGenre.value;
+      const currentRating = filterRating.value;
+
+      // 연도
+      filterYear.innerHTML = '<option value="">전체</option>';
+      Array.from(years).sort((a,b)=>b.localeCompare(a)).forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y + "년";
+        filterYear.appendChild(opt);
+      });
+      if (currentYear && years.has(currentYear)) filterYear.value = currentYear;
+
+      // 작가
+      filterAuthor.innerHTML = '<option value="">전체</option>';
+      Array.from(authors).sort((a,b)=>a.localeCompare(b)).forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        filterAuthor.appendChild(opt);
+      });
+      if (currentAuthor && authors.has(currentAuthor)) filterAuthor.value = currentAuthor;
+
+      // 분야
+      filterGenre.innerHTML = '<option value="">전체</option>';
+      Array.from(genres).sort((a,b)=>a.localeCompare(b)).forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g;
+        opt.textContent = g;
+        filterGenre.appendChild(opt);
+      });
+      if (currentGenre && genres.has(currentGenre)) filterGenre.value = currentGenre;
+
+      // 별점 (1~5만 허용)
+      filterRating.innerHTML =
+        '<option value="">전체</option>' +
+        '<option value="1" class="star">★☆☆☆☆</option>' +
+        '<option value="2" class="star">★★☆☆☆</option>' +
+        '<option value="3" class="star">★★★☆☆</option>' +
+        '<option value="4" class="star">★★★★☆</option>' +
+        '<option value="5" class="star">★★★★★</option>';
+      if (currentRating) filterRating.value = currentRating;
+    }
+
+    function applyFilters(books) {
+      const yearF = filterYear.value;
+      const authorF = filterAuthor.value;
+      const genreF = filterGenre.value;
+      const formatF = filterFormat.value;
+      const ratingF = filterRating.value;
+
+      return books.filter(b => {
+        // 연도(완독일 기준)
+        if (yearF) {
+          if (!b.finishDate || b.finishDate.slice(0,4) !== yearF) return false;
+        }
+        // 작가
+        if (authorF) {
+          if ((b.author || "") !== authorF) return false;
+        }
+        // 분야
+        if (genreF) {
+          if ((b.genre || "") !== genreF) return false;
+        }
+        // 형태
+        if (formatF) {
+          if ((b.format || "") !== formatF) return false;
+        }
+        // 별점
+        if (ratingF) {
+          if (b.rating == null || String(b.rating) !== ratingF) return false;
+        }
+        return true;
+      });
+    }
+
+    filterYear.addEventListener("change", renderList);
+    filterAuthor.addEventListener("change", renderList);
+    filterGenre.addEventListener("change", renderList);
+    filterFormat.addEventListener("change", renderList);
+    filterRating.addEventListener("change", renderList);
+
+    filterResetBtn.addEventListener("click", () => {
+      filterYear.value = "";
+      filterAuthor.value = "";
+      filterGenre.value = "";
+      filterFormat.value = "";
+      filterRating.value = "";
+      renderList();
+    });
+
     function renderList() {
       const books = loadBooks();
+
+      updateFilterOptions(books);
 
       if (books.length === 0) {
         bookTable.style.display = "none";
@@ -484,8 +696,21 @@
         return;
       }
 
+      const filtered = applyFilters(books);
+
+      if (filtered.length === 0) {
+        bookTable.style.display = "none";
+        emptyList.style.display = "block";
+        emptyList.textContent = "필터 조건에 맞는 책이 없습니다.";
+        listSummary.textContent = `총 ${books.length}권 기록됨 (필터 결과 0권)`;
+        return;
+      } else {
+        emptyList.style.display = "none";
+        emptyList.textContent = "아직 등록된 책이 없습니다.";
+      }
+
       // 시작 날짜 기준 내림차순 정렬 (없으면 뒤로)
-      const sorted = books
+      const sorted = filtered
         .map((b, idx) => ({ ...b, _index: idx }))
         .sort((a, b) => {
           if (!a.startDate && !b.startDate) return 0;
@@ -494,7 +719,6 @@
           return b.startDate.localeCompare(a.startDate);
         });
 
-      emptyList.style.display = "none";
       bookTable.style.display = "table";
       bookTbody.innerHTML = "";
 
@@ -503,8 +727,14 @@
         const status = item.status || (item.finishDate ? "finished" : "reading");
 
         const tdTitle = document.createElement("td");
-        tdTitle.innerHTML = `<div>${escapeHtml(item.title)}</div>` +
-          (item.genre ? `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>` : "");
+        let html = `<div>${escapeHtml(item.title)}</div>`;
+        if (item.author) {
+          html += `<div class="small">작가: ${escapeHtml(item.author)}</div>`;
+        }
+        if (item.genre) {
+          html += `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>`;
+        }
+        tdTitle.innerHTML = html;
         tr.appendChild(tdTitle);
 
         const tdDates = document.createElement("td");
@@ -530,11 +760,11 @@
         tdActions.className = "center actions";
         const editBtn = document.createElement("button");
         editBtn.textContent = "수정";
-        editBtn.addEventListener("click", () => startEdit(item._index));
+        editBtn.addEventListener("click", () => startEditByIndex(item));
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "삭제";
-        delBtn.addEventListener("click", () => deleteBook(item._index));
+        delBtn.addEventListener("click", () => deleteBookByIndex(item));
 
         tdActions.appendChild(editBtn);
         tdActions.appendChild(delBtn);
@@ -548,7 +778,35 @@
         return status === "finished" && b.finishDate;
       }).length;
 
-      listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권)`;
+      listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
+    }
+
+    function startEditByIndex(itemWithIndex) {
+      // itemWithIndex._index는 renderList에서 map할 때의 인덱스가 아니라,
+      // 여기서는 원본 배열 인덱스를 알 수 없으니, 다시 찾아야 함.
+      const books = loadBooks();
+      const idx = books.findIndex(b =>
+        b.title === itemWithIndex.title &&
+        b.startDate === itemWithIndex.startDate &&
+        b.finishDate === itemWithIndex.finishDate &&
+        (b.author || "") === (itemWithIndex.author || "")
+      );
+      const index = idx >= 0 ? idx : 0;
+      startEdit(index);
+    }
+
+    function deleteBookByIndex(itemWithIndex) {
+      const books = loadBooks();
+      const idx = books.findIndex(b =>
+        b.title === itemWithIndex.title &&
+        b.startDate === itemWithIndex.startDate &&
+        b.finishDate === itemWithIndex.finishDate &&
+        (b.author || "") === (itemWithIndex.author || "")
+      );
+      const index = idx >= 0 ? idx : -1;
+      if (index >= 0) {
+        deleteBook(index);
+      }
     }
 
     function startEdit(index) {
@@ -557,6 +815,7 @@
       if (!book) return;
 
       titleInput.value = book.title || "";
+      authorInput.value = book.author || "";
       genreInput.value = book.genre || "";
       startInput.value = book.startDate || "";
 
