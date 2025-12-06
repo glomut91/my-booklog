@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffffff">
+  <meta charset="UTF-8" />
+  <title>독서 기록 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 12px 40px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.7rem;
+      margin-bottom: 8px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0 18px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .tab-btn.active {
+      font-weight: 600;
+      border-color: #888;
+      background: #fff;
+    }
+
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+
+    /* form */
+    form {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .form-group {
+      flex: 1;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+    }
+    label {
+      margin-bottom: 4px;
+    }
+    input[type="text"],
+    input[type="date"],
+    select {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+    .radio-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    button {
+      cursor: pointer;
+    }
+    .primary {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+    .primary:active {
+      transform: scale(0.98);
+    }
+    .secondary {
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+    }
+
+    /* table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 6px 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td {
+      background: #fcfcfc;
+    }
+    .center {
+      text-align: center;
+    }
+    .small {
+      font-size: 0.8rem;
+      color: #777;
+    }
+    .tag {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      font-size: 0.78rem;
+      display: inline-block;
+      margin-right: 4px;
+    }
+    .actions button {
+      font-size: 0.78rem;
+      margin-right: 4px;
+    }
+    #empty-list {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 12px;
+    }
+
+    /* stats */
+    .stats-block {
+      margin-bottom: 20px;
+    }
+    .stats-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    @media (max-width: 640px) {
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        font-size: 0.8rem;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>독서 기록</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="list-section">기록</button>
+    <button class="tab-btn" data-tab="stats-section">통계</button>
+  </div>
+
+  <!-- 기록 입력 & 목록 -->
+  <div id="list-section" class="section active">
+    <form id="book-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="title">책 제목</label>
+          <input type="text" id="title" required />
+        </div>
+        <div class="form-group">
+          <label for="genre">분야 (예: SF, 추리, 인문)</label>
+          <input type="text" id="genre" placeholder="자유 입력" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="start-date">읽기 시작한 날짜</label>
+          <input type="date" id="start-date" />
+        </div>
+        <div class="form-group">
+          <label for="finish-date">완독한 날짜</label>
+          <input type="date" id="finish-date" />
+        </div>
+        <div class="form-group">
+          <label for="rating">별점 (0~5점)</label>
+          <select id="rating">
+            <option value="">선택 안 함</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>형태</label>
+          <div class="radio-row">
+            <label><input type="radio" name="format" value="ebook" /> e북</label>
+            <label><input type="radio" name="format" value="paper" /> 실물책</label>
+            <label><input type="radio" name="format" value="audio" /> 오디오북</label>
+            <label><input type="radio" name="format" value="" checked /> 미선택</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="secondary" id="reset-btn" style="display:none;">입력 취소</button>
+        <button type="submit" class="primary" id="submit-btn">추가</button>
+      </div>
+      <input type="hidden" id="edit-index" value="" />
+    </form>
+
+    <div id="empty-list">아직 등록된 책이 없습니다.</div>
+    <table id="book-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>제목 / 분야</th>
+          <th>기간</th>
+          <th class="center">별점</th>
+          <th class="center">형태</th>
+          <th class="center">작업</th>
+        </tr>
+      </thead>
+      <tbody id="book-tbody"></tbody>
+    </table>
+    <div class="small" id="list-summary"></div>
+  </div>
+
+  <!-- 통계 -->
+  <div id="stats-section" class="section">
+    <div class="small" style="margin-bottom:8px;">
+      ※ 통계는 <strong>완독 날짜</strong> 기준으로 계산됩니다. (완독 날짜가 없는 책은 통계에서 제외)
+    </div>
+
+    <div class="stats-block">
+      <div class="stats-title">전체 요약</div>
+      <div id="overall-stats" class="small">데이터가 없습니다.</div>
+    </div>
+
+    <div class="stats-block">
+      <div class="stats-title">연도별 통계</div>
+      <table id="year-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>연도</th>
+            <th class="center">완독 권수</th>
+            <th class="center">평균 별점</th>
+          </tr>
+        </thead>
+        <tbody id="year-tbody"></tbody>
+      </table>
+      <div id="year-empty" class="small">연도별 통계를 계산할 데이터가 없습니다.</div>
+    </div>
+
+    <div class="stats-block">
+      <div class="stats-title">월별 통계 (연-월 기준)</div>
+      <table id="month-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>연-월</th>
+            <th class="center">완독 권수</th>
+            <th class="center">평균 별점</th>
+          </tr>
+        </thead>
+        <tbody id="month-tbody"></tbody>
+      </table>
+      <div id="month-empty" class="small">월별 통계를 계산할 데이터가 없습니다.</div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "reading_log_v1";
+
+    const form = document.getElementById("book-form");
+    const titleInput = document.getElementById("title");
+    const genreInput = document.getElementById("genre");
+    const startInput = document.getElementById("start-date");
+    const finishInput = document.getElementById("finish-date");
+    const ratingSelect = document.getElementById("rating");
+    const editIndexInput = document.getElementById("edit-index");
+    const submitBtn = document.getElementById("submit-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    const bookTable = document.getElementById("book-table");
+    const bookTbody = document.getElementById("book-tbody");
+    const emptyList = document.getElementById("empty-list");
+    const listSummary = document.getElementById("list-summary");
+
+    const overallStatsDiv = document.getElementById("overall-stats");
+    const yearTable = document.getElementById("year-table");
+    const yearTbody = document.getElementById("year-tbody");
+    const yearEmpty = document.getElementById("year-empty");
+    const monthTable = document.getElementById("month-table");
+    const monthTbody = document.getElementById("month-tbody");
+    const monthEmpty = document.getElementById("month-empty");
+
+    /* 탭 전환 */
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "stats-section") {
+          renderStats();
+        }
+      });
+    });
+
+    function getFormatValue() {
+      const checked = document.querySelector("input[name='format']:checked");
+      return checked ? checked.value : "";
+    }
+
+    function setFormatValue(val) {
+      const radios = document.querySelectorAll("input[name='format']");
+      radios.forEach(r => {
+        if (r.value === val) r.checked = true;
+      });
+      // 값이 없으면 "미선택" 라디오에 체크
+      if (!val) {
+        radios.forEach(r => {
+          if (r.value === "") r.checked = true;
+        });
+      }
+    }
+
+    function loadBooks() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+
+    function saveBooks(books) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+    }
+
+    function clearForm() {
+      form.reset();
+      editIndexInput.value = "";
+      submitBtn.textContent = "추가";
+      resetBtn.style.display = "none";
+      // 미선택 라디오 다시 체크
+      setFormatValue("");
+    }
+
+    resetBtn.addEventListener("click", clearForm);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = titleInput.value.trim();
+      if (!title) {
+        alert("책 제목은 필수입니다.");
+        return;
+      }
+
+      const genre = genreInput.value.trim();
+      const startDate = startInput.value || "";
+      const finishDate = finishInput.value || "";
+      const rating = ratingSelect.value === "" ? null : Number(ratingSelect.value);
+      const format = getFormatValue();
+
+      const book = { title, genre, startDate, finishDate, rating, format };
+
+      const books = loadBooks();
+      const editIndex = editIndexInput.value;
+
+      if (editIndex !== "") {
+        books[Number(editIndex)] = book;
+      } else {
+        books.push(book);
+      }
+      saveBooks(books);
+      clearForm();
+      renderList();
+    });
+
+    function renderList() {
+      const books = loadBooks();
+
+      if (books.length === 0) {
+        bookTable.style.display = "none";
+        emptyList.style.display = "block";
+        listSummary.textContent = "";
+        return;
+      }
+
+      // 시작 날짜 기준 내림차순 정렬 (없으면 뒤로)
+      const sorted = books
+        .map((b, idx) => ({ ...b, _index: idx }))
+        .sort((a, b) => {
+          if (!a.startDate && !b.startDate) return 0;
+          if (!a.startDate) return 1;
+          if (!b.startDate) return -1;
+          return b.startDate.localeCompare(a.startDate);
+        });
+
+      emptyList.style.display = "none";
+      bookTable.style.display = "table";
+      bookTbody.innerHTML = "";
+
+      sorted.forEach(item => {
+        const tr = document.createElement("tr");
+
+        const tdTitle = document.createElement("td");
+        tdTitle.innerHTML = `<div>${escapeHtml(item.title)}</div>` +
+          (item.genre ? `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>` : "");
+        tr.appendChild(tdTitle);
+
+        const tdDates = document.createElement("td");
+        let period = "";
+        if (item.startDate) period += item.startDate;
+        if (item.finishDate) period += (period ? " ~ " : "") + item.finishDate;
+        if (!period) period = "<span class='small'>날짜 없음</span>";
+        tdDates.innerHTML = period;
+        tr.appendChild(tdDates);
+
+        const tdRating = document.createElement("td");
+        tdRating.className = "center";
+        tdRating.textContent = item.rating == null ? "-" : "★ " + item.rating;
+        tr.appendChild(tdRating);
+
+        const tdFormat = document.createElement("td");
+        tdFormat.className = "center small";
+        tdFormat.textContent = formatToText(item.format);
+        tr.appendChild(tdFormat);
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "center actions";
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "수정";
+        editBtn.addEventListener("click", () => startEdit(item._index));
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.addEventListener("click", () => deleteBook(item._index));
+
+        tdActions.appendChild(editBtn);
+        tdActions.appendChild(delBtn);
+        tr.appendChild(tdActions);
+
+        bookTbody.appendChild(tr);
+      });
+
+      const finishedCount = books.filter(b => b.finishDate).length;
+      listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권)`;
+    }
+
+    function startEdit(index) {
+      const books = loadBooks();
+      const book = books[index];
+      if (!book) return;
+
+      titleInput.value = book.title || "";
+      genreInput.value = book.genre || "";
+      startInput.value = book.startDate || "";
+      finishInput.value = book.finishDate || "";
+      ratingSelect.value = book.rating == null ? "" : String(book.rating);
+      setFormatValue(book.format || "");
+      editIndexInput.value = String(index);
+      submitBtn.textContent = "수정 저장";
+      resetBtn.style.display = "inline-block";
+      titleInput.focus();
+    }
+
+    function deleteBook(index) {
+      if (!confirm("이 기록을 삭제할까요?")) return;
+      const books = loadBooks();
+      books.splice(index, 1);
+      saveBooks(books);
+      clearForm();
+      renderList();
+    }
+
+    function formatToText(format) {
+      switch (format) {
+        case "ebook": return "e북";
+        case "paper": return "실물책";
+        case "audio": return "오디오북";
+        default: return "-";
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    /* 통계 렌더링 */
+    function renderStats() {
+      const books = loadBooks();
+      const finished = books.filter(b => b.finishDate);
+
+      // 전체 요약
+      if (finished.length === 0) {
+        overallStatsDiv.textContent = "완독 날짜가 있는 책이 아직 없습니다.";
+      } else {
+        const ratings = finished
+          .map(b => b.rating)
+          .filter(r => r != null);
+        const count = finished.length;
+        const avgRating = ratings.length
+          ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2)
+          : "-";
+        const firstYear = finished
+          .map(b => b.finishDate.slice(0, 4))
+          .filter(y => /^\d{4}$/.test(y));
+        let yearsSpan = "";
+        if (firstYear.length) {
+          const minY = Math.min(...firstYear.map(Number));
+          const maxY = Math.max(...firstYear.map(Number));
+          yearsSpan = (minY === maxY) ? `${minY}년` : `${minY}~${maxY}년`;
+        }
+        overallStatsDiv.textContent =
+          `완독 ${count}권` +
+          (avgRating !== "-" ? `, 평균 별점 ${avgRating}점` : "") +
+          (yearsSpan ? ` (${yearsSpan} 기준)` : "");
+      }
+
+      // 연도별 통계
+      const yearStats = {};
+      finished.forEach(b => {
+        if (!b.finishDate) return;
+        const year = b.finishDate.slice(0, 4);
+        if (!/^\d{4}$/.test(year)) return;
+        if (!yearStats[year]) {
+          yearStats[year] = { count: 0, ratingSum: 0, ratingCount: 0 };
+        }
+        yearStats[year].count += 1;
+        if (b.rating != null) {
+          yearStats[year].ratingSum += b.rating;
+          yearStats[year].ratingCount += 1;
+        }
+      });
+
+      yearTbody.innerHTML = "";
+      const years = Object.keys(yearStats).sort((a, b) => b.localeCompare(a));
+      if (years.length === 0) {
+        yearTable.style.display = "none";
+        yearEmpty.style.display = "block";
+      } else {
+        yearTable.style.display = "table";
+        yearEmpty.style.display = "none";
+        years.forEach(year => {
+          const stat = yearStats[year];
+          const tr = document.createElement("tr");
+          const tdYear = document.createElement("td");
+          tdYear.textContent = year + "년";
+          const tdCount = document.createElement("td");
+          tdCount.className = "center";
+          tdCount.textContent = stat.count;
+          const tdAvg = document.createElement("td");
+          tdAvg.className = "center";
+          tdAvg.textContent = stat.ratingCount
+            ? (stat.ratingSum / stat.ratingCount).toFixed(2)
+            : "-";
+          tr.appendChild(tdYear);
+          tr.appendChild(tdCount);
+          tr.appendChild(tdAvg);
+          yearTbody.appendChild(tr);
+        });
+      }
+
+      // 월별 통계 (YYYY-MM)
+      const monthStats = {};
+      finished.forEach(b => {
+        if (!b.finishDate) return;
+        const ym = b.finishDate.slice(0, 7); // "YYYY-MM"
+        if (!/^\d{4}-\d{2}$/.test(ym)) return;
+        if (!monthStats[ym]) {
+          monthStats[ym] = { count: 0, ratingSum: 0, ratingCount: 0 };
+        }
+        monthStats[ym].count += 1;
+        if (b.rating != null) {
+          monthStats[ym].ratingSum += b.rating;
+          monthStats[ym].ratingCount += 1;
+        }
+      });
+
+      monthTbody.innerHTML = "";
+      const months = Object.keys(monthStats).sort((a, b) => b.localeCompare(a));
+      if (months.length === 0) {
+        monthTable.style.display = "none";
+        monthEmpty.style.display = "block";
+      } else {
+        monthTable.style.display = "table";
+        monthEmpty.style.display = "none";
+        months.forEach(ym => {
+          const stat = monthStats[ym];
+          const tr = document.createElement("tr");
+          const tdYm = document.createElement("td");
+          tdYm.textContent = ym;
+          const tdCount = document.createElement("td");
+          tdCount.className = "center";
+          tdCount.textContent = stat.count;
+          const tdAvg = document.createElement("td");
+          tdAvg.className = "center";
+          tdAvg.textContent = stat.ratingCount
+            ? (stat.ratingSum / stat.ratingCount).toFixed(2)
+            : "-";
+          tr.appendChild(tdYm);
+          tr.appendChild(tdCount);
+          tr.appendChild(tdAvg);
+          monthTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // 초기 렌더
+    renderList();
+  </script>
+</body>
+</html>
