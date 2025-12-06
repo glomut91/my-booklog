@@ -729,7 +729,7 @@
         const tdTitle = document.createElement("td");
         let html = `<div>${escapeHtml(item.title)}</div>`;
         if (item.author) {
-          html += `<div class="small">작가: ${escapeHtml(item.author)}</div>`;
+          html += `<div class="small">${escapeHtml(item.author)}</div>`;
         }
         if (item.genre) {
           html += `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>`;
@@ -993,3 +993,4 @@
   </script>
 </body>
 </html>
+
