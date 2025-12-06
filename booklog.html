@@ -4,7 +4,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <meta charset="UTF-8" />
-  <title>독서 기록 앱</title>
+  <title>독서 기록</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -237,7 +237,7 @@
           <label>형태</label>
           <div class="radio-row">
             <label><input type="radio" name="format" value="ebook" /> e북</label>
-            <label><input type="radio" name="format" value="paper" /> 실물책</label>
+            <label><input type="radio" name="format" value="paper" /> 종이책</label>
             <label><input type="radio" name="format" value="audio" /> 오디오북</label>
             <label><input type="radio" name="format" value="" checked /> 미선택</label>
           </div>
@@ -598,7 +598,7 @@
     function formatToText(format) {
       switch (format) {
         case "ebook": return "e북";
-        case "paper": return "실물책";
+        case "paper": return "종이책";
         case "audio": return "오디오북";
         default: return "-";
       }
@@ -741,3 +741,4 @@
   </script>
 </body>
 </html>
+
