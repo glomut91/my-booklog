@@ -222,8 +222,7 @@
         <div class="form-group">
           <label for="rating">별점</label>
           <select id="rating" class="rating-select">
-            <option value="">선택 안 함</option>
-            <option value="0">☆☆☆☆☆</option>
+            <option value="">별점 선택</option>
             <option value="1">★☆☆☆☆</option>
             <option value="2">★★☆☆☆</option>
             <option value="3">★★★☆☆</option>
@@ -241,6 +240,13 @@
             <label><input type="radio" name="format" value="paper" /> 실물책</label>
             <label><input type="radio" name="format" value="audio" /> 오디오북</label>
             <label><input type="radio" name="format" value="" checked /> 미선택</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>상태</label>
+          <div class="radio-row">
+            <label><input type="radio" name="status" value="reading" checked /> 읽는 중</label>
+            <label><input type="radio" name="status" value="finished" /> 완독</label>
           </div>
         </div>
       </div>
@@ -336,6 +342,8 @@
     const monthTbody = document.getElementById("month-tbody");
     const monthEmpty = document.getElementById("month-empty");
 
+    const statusRadios = document.querySelectorAll("input[name='status']");
+
     /* 탭 전환 */
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -367,6 +375,46 @@
       }
     }
 
+    function getStatusValue() {
+      const checked = document.querySelector("input[name='status']:checked");
+      return checked ? checked.value : "reading";
+    }
+
+    function setStatusValue(val) {
+      const radios = document.querySelectorAll("input[name='status']");
+      let matched = false;
+      radios.forEach(r => {
+        if (r.value === val) {
+          r.checked = true;
+          matched = true;
+        }
+      });
+      if (!matched) {
+        radios.forEach(r => {
+          if (r.value === "reading") r.checked = true;
+        });
+      }
+      updateStatusDependentFields();
+    }
+
+    function updateStatusDependentFields() {
+      const status = getStatusValue();
+      const isFinished = status === "finished";
+
+      finishInput.disabled = !isFinished;
+      ratingSelect.disabled = !isFinished;
+
+      if (!isFinished) {
+        // 읽는 중이면 완독일/별점 초기화
+        finishInput.value = "";
+        ratingSelect.value = "";
+      }
+    }
+
+    statusRadios.forEach(r => {
+      r.addEventListener("change", updateStatusDependentFields);
+    });
+
     function loadBooks() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
@@ -388,8 +436,8 @@
       editIndexInput.value = "";
       submitBtn.textContent = "추가";
       resetBtn.style.display = "none";
-      // 미선택 라디오 다시 체크
       setFormatValue("");
+      setStatusValue("reading");
     }
 
     resetBtn.addEventListener("click", clearForm);
@@ -403,12 +451,22 @@
       }
 
       const genre = genreInput.value.trim();
+      const status = getStatusValue();
       const startDate = startInput.value || "";
-      const finishDate = finishInput.value || "";
-      const rating = ratingSelect.value === "" ? null : Number(ratingSelect.value);
+      // 상태에 따라 완독일/별점 처리
+      const finishDate = status === "finished" ? (finishInput.value || "") : "";
+      const rating = (status === "finished" && ratingSelect.value !== "")
+        ? Number(ratingSelect.value)
+        : null;
       const format = getFormatValue();
 
-      const book = { title, genre, startDate, finishDate, rating, format };
+      // 완독이라고 했는데 완독일이 없으면 살짝 안내만
+      if (status === "finished" && !finishDate) {
+        const ok = confirm("상태가 '완독'인데 완독 날짜가 비어 있습니다. 그대로 저장할까요?");
+        if (!ok) return;
+      }
+
+      const book = { title, genre, startDate, finishDate, rating, format, status };
 
       const books = loadBooks();
       const editIndex = editIndexInput.value;
@@ -449,6 +507,7 @@
 
       sorted.forEach(item => {
         const tr = document.createElement("tr");
+        const status = item.status || (item.finishDate ? "finished" : "reading");
 
         const tdTitle = document.createElement("td");
         tdTitle.innerHTML = `<div>${escapeHtml(item.title)}</div>` +
@@ -460,7 +519,8 @@
         if (item.startDate) period += item.startDate;
         if (item.finishDate) period += (period ? " ~ " : "") + item.finishDate;
         if (!period) period = "<span class='small'>날짜 없음</span>";
-        tdDates.innerHTML = period;
+        const statusText = status === "finished" ? "완독" : "읽는 중";
+        tdDates.innerHTML = period + `<div class="small">${statusText}</div>`;
         tr.appendChild(tdDates);
 
         const tdRating = document.createElement("td");
@@ -490,7 +550,11 @@
         bookTbody.appendChild(tr);
       });
 
-      const finishedCount = books.filter(b => b.finishDate).length;
+      const finishedCount = books.filter(b => {
+        const status = b.status || (b.finishDate ? "finished" : "reading");
+        return status === "finished" && b.finishDate;
+      }).length;
+
       listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권)`;
     }
 
@@ -502,8 +566,19 @@
       titleInput.value = book.title || "";
       genreInput.value = book.genre || "";
       startInput.value = book.startDate || "";
-      finishInput.value = book.finishDate || "";
-      ratingSelect.value = book.rating == null ? "" : String(book.rating);
+
+      const status = book.status || (book.finishDate ? "finished" : "reading");
+      setStatusValue(status);
+
+      // 상태에 따라 완독일/별점 입력
+      if (status === "finished") {
+        finishInput.value = book.finishDate || "";
+        ratingSelect.value = book.rating == null ? "" : String(book.rating);
+      } else {
+        finishInput.value = "";
+        ratingSelect.value = "";
+      }
+
       setFormatValue(book.format || "");
       editIndexInput.value = String(index);
       submitBtn.textContent = "수정 저장";
@@ -539,7 +614,11 @@
     /* 통계 렌더링 */
     function renderStats() {
       const books = loadBooks();
-      const finished = books.filter(b => b.finishDate);
+
+      const finished = books.filter(b => {
+        const status = b.status || (b.finishDate ? "finished" : "reading");
+        return status === "finished" && b.finishDate;
+      });
 
       // 전체 요약
       if (finished.length === 0) {
@@ -656,7 +735,8 @@
       }
     }
 
-    // 초기 렌더
+    // 초기 상태 의존 필드 세팅 + 리스트 렌더
+    updateStatusDependentFields();
     renderList();
   </script>
 </body>
