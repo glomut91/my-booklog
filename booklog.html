@@ -402,6 +402,20 @@
   <div id="list-section" class="section">
     <div class="filters">
       <div class="filters-title">필터</div>
+
+      <!-- 1행: 제목 / 작가 -->
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="filter-title">제목</label>
+          <input type="text" id="filter-title" placeholder="제목 검색" />
+        </div>
+        <div class="filter-group">
+          <label for="filter-author">작가</label>
+          <input type="text" id="filter-author" placeholder="작가 검색" />
+        </div>
+      </div>
+
+      <!-- 2행: 연도 / 분야 -->
       <div class="filters-row">
         <div class="filter-group">
           <label for="filter-year">연도</label>
@@ -410,22 +424,14 @@
           </select>
         </div>
         <div class="filter-group">
-          <label for="filter-title">제목</label>
-          <input type="text" id="filter-title" placeholder="제목 검색" />
-        </div>
-      </div>
-      <div class="filters-row">
-        <div class="filter-group">
-          <label for="filter-author">작가</label>
-          <input type="text" id="filter-author" placeholder="작가 검색" />
-        </div>
-        <div class="filter-group">
           <label for="filter-genre">분야</label>
           <select id="filter-genre">
             <option value="">전체</option>
           </select>
         </div>
       </div>
+
+      <!-- 3행: 형태 -->
       <div class="filters-row">
         <div class="filter-group">
           <label for="filter-format">형태</label>
@@ -437,6 +443,7 @@
           </select>
         </div>
       </div>
+
       <div class="filters-actions">
         <button type="button" class="secondary" id="filter-reset-btn">필터 초기화</button>
       </div>
@@ -544,10 +551,10 @@
     const monthTbody = document.getElementById("month-tbody");
     const monthEmpty = document.getElementById("month-empty");
 
-    const filterYear = document.getElementById("filter-year");
-    const filterTitle = document.getElementById("filter-title");
+    const filterYear   = document.getElementById("filter-year");
+    const filterTitle  = document.getElementById("filter-title");
     const filterAuthor = document.getElementById("filter-author");
-    const filterGenre = document.getElementById("filter-genre");
+    const filterGenre  = document.getElementById("filter-genre");
     const filterFormat = document.getElementById("filter-format");
     const filterResetBtn = document.getElementById("filter-reset-btn");
 
