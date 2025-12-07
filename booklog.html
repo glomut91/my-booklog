@@ -551,15 +551,19 @@
 
       const books = loadBooks();
       const editIndex = editIndexInput.value;
+      let message = "";
 
       if (editIndex !== "") {
         books[Number(editIndex)] = book;
+        message = "독서 기록이 수정되었습니다.";
       } else {
         books.push(book);
+        message = "새 독서 기록이 추가되었습니다.";
       }
       saveBooks(books);
       clearForm();
       renderList();
+      alert(message);
     });
 
     function isFinished(book) {
@@ -934,4 +938,3 @@
   </script>
 </body>
 </html>
-
