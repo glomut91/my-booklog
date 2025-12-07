@@ -70,18 +70,16 @@
     }
     input[type="text"],
     input[type="date"],
-    select {
+    select,
+    textarea {
       padding: 6px 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 0.9rem;
+      font-family: inherit;
     }
-    .radio-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.9rem;
-      flex-wrap: wrap;
+    textarea {
+      resize: vertical;
     }
     .btn-row {
       display: flex;
@@ -107,14 +105,6 @@
       font-size: 0.85rem;
       border: 1px solid #ccc;
       background: #f7f7f7;
-    }
-
-    /* rating select */
-    .rating-select {
-      color: #000;
-    }
-    .rating-select option {
-      color: #000;
     }
 
     /* filters */
@@ -205,6 +195,48 @@
       font-weight: 600;
       margin-bottom: 6px;
     }
+
+    /* memo modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .modal h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+    }
+    .modal-header {
+      margin-bottom: 8px;
+    }
+    .modal textarea {
+      flex: 1;
+      min-height: 160px;
+      margin-top: 6px;
+    }
+    .modal .btn-row {
+      margin-top: 10px;
+      justify-content: flex-end;
+    }
+
     @media (max-width: 640px) {
       table,
       thead,
@@ -217,6 +249,10 @@
       h1 {
         font-size: 1.4rem;
       }
+      .modal {
+        max-width: 95%;
+        max-height: 90vh;
+      }
     }
   </style>
 </head>
@@ -225,11 +261,11 @@
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="input-section">입력</button>
-    <button class="tab-btn" data-tab="list-section">목록</button>
+    <button class="tab-btn" data-tab="list-section">기록</button>
     <button class="tab-btn" data-tab="stats-section">통계</button>
   </div>
 
-  <!-- 입력 탭: 폼만 -->
+  <!-- 입력 탭 -->
   <div id="input-section" class="section active">
     <form id="book-form">
       <div class="form-row">
@@ -256,27 +292,24 @@
           <label for="finish-date">완독한 날짜</label>
           <input type="date" id="finish-date" />
         </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
-          <label for="rating">별점</label>
-          <select id="rating" class="rating-select">
-            <option value="">별점 선택</option>
-            <option value="1">★☆☆☆☆</option>
-            <option value="2">★★☆☆☆</option>
-            <option value="3">★★★☆☆</option>
-            <option value="4">★★★★☆</option>
-            <option value="5">★★★★★</option>
+          <label for="format">형태</label>
+          <select id="format">
+            <option value="">선택</option>
+            <option value="ebook">e북</option>
+            <option value="paper">종이책</option>
+            <option value="audio">오디오북</option>
           </select>
         </div>
       </div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label>형태</label>
-          <div class="radio-row">
-            <label><input type="radio" name="format" value="ebook" /> e북</label>
-            <label><input type="radio" name="format" value="paper" /> 종이책</label>
-            <label><input type="radio" name="format" value="audio" /> 오디오북</label>
-          </div>
+        <div class="form-group" style="flex:1 1 100%">
+          <label for="memo">메모</label>
+          <textarea id="memo" rows="4"></textarea>
         </div>
       </div>
 
@@ -291,7 +324,7 @@
     </form>
   </div>
 
-  <!-- 목록 탭: 필터 + 리스트 -->
+  <!-- 기록 탭: 필터 + 리스트 -->
   <div id="list-section" class="section">
     <div class="filters">
       <div class="filters-title">필터</div>
@@ -325,17 +358,6 @@
             <option value="audio">오디오북</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label for="filter-rating">별점</label>
-          <select id="filter-rating" class="rating-select">
-            <option value="">전체</option>
-            <option value="1">★☆☆☆☆</option>
-            <option value="2">★★☆☆☆</option>
-            <option value="3">★★★☆☆</option>
-            <option value="4">★★★★☆</option>
-            <option value="5">★★★★★</option>
-          </select>
-        </div>
       </div>
       <div class="filters-actions">
         <button type="button" class="secondary" id="filter-reset-btn">필터 초기화</button>
@@ -348,8 +370,8 @@
         <tr>
           <th>제목 / 작가 / 분야</th>
           <th>기간 / 상태</th>
-          <th class="center">별점</th>
           <th class="center">형태</th>
+          <th class="center">메모</th>
           <th class="center">작업</th>
         </tr>
       </thead>
@@ -376,7 +398,6 @@
           <tr>
             <th>연도</th>
             <th class="center">완독 권수</th>
-            <th class="center">평균 별점</th>
           </tr>
         </thead>
         <tbody id="year-tbody"></tbody>
@@ -391,12 +412,26 @@
           <tr>
             <th>연-월</th>
             <th class="center">완독 권수</th>
-            <th class="center">평균 별점</th>
           </tr>
         </thead>
         <tbody id="month-tbody"></tbody>
       </table>
       <div id="month-empty" class="small">월별 통계를 계산할 데이터가 없습니다.</div>
+    </div>
+  </div>
+
+  <!-- 메모 보기/수정 모달 -->
+  <div id="memo-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>메모</h2>
+        <div id="memo-book-info" class="small"></div>
+      </div>
+      <textarea id="memo-modal-text"></textarea>
+      <div class="btn-row">
+        <button type="button" class="secondary" id="memo-cancel-btn">닫기</button>
+        <button type="button" class="primary" id="memo-save-btn">저장</button>
+      </div>
     </div>
   </div>
 
@@ -409,7 +444,8 @@
     const genreInput = document.getElementById("genre");
     const startInput = document.getElementById("start-date");
     const finishInput = document.getElementById("finish-date");
-    const ratingSelect = document.getElementById("rating");
+    const formatSelect = document.getElementById("format");
+    const memoInput = document.getElementById("memo");
     const editIndexInput = document.getElementById("edit-index");
     const submitBtn = document.getElementById("submit-btn");
     const resetBtn = document.getElementById("reset-btn");
@@ -432,8 +468,15 @@
     const filterAuthor = document.getElementById("filter-author");
     const filterGenre = document.getElementById("filter-genre");
     const filterFormat = document.getElementById("filter-format");
-    const filterRating = document.getElementById("filter-rating");
     const filterResetBtn = document.getElementById("filter-reset-btn");
+
+    // 메모 모달 요소
+    const memoModal = document.getElementById("memo-modal");
+    const memoBookInfo = document.getElementById("memo-book-info");
+    const memoModalText = document.getElementById("memo-modal-text");
+    const memoCancelBtn = document.getElementById("memo-cancel-btn");
+    const memoSaveBtn = document.getElementById("memo-save-btn");
+    let memoEditIndex = null;
 
     /* 탭 전환 */
     document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -449,22 +492,6 @@
         }
       });
     });
-
-    function getFormatValue() {
-      const checked = document.querySelector("input[name='format']:checked");
-      return checked ? checked.value : "";
-    }
-
-    function setFormatValue(val) {
-      const radios = document.querySelectorAll("input[name='format']");
-      radios.forEach(r => {
-        r.checked = (r.value === val);
-      });
-    }
-
-    function isFinished(book) {
-      return !!(book.finishDate);
-    }
 
     function loadBooks() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -482,23 +509,12 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
     }
 
-    function updateFinishDependentFields() {
-      const hasFinish = !!finishInput.value;
-      ratingSelect.disabled = !hasFinish;
-      if (!hasFinish) {
-        ratingSelect.value = "";
-      }
-    }
-
-    finishInput.addEventListener("input", updateFinishDependentFields);
-
     function clearForm() {
       form.reset();
       editIndexInput.value = "";
       submitBtn.textContent = "추가";
       resetBtn.style.display = "none";
-      setFormatValue("");
-      updateFinishDependentFields();
+      formatSelect.value = "";
     }
 
     resetBtn.addEventListener("click", clearForm);
@@ -515,16 +531,10 @@
       const genre = genreInput.value.trim();
       const startDate = startInput.value || "";
       const finishDate = finishInput.value || "";
-      const rating = (finishDate && ratingSelect.value !== "")
-        ? Number(ratingSelect.value)
-        : null;
-      const format = getFormatValue();
+      const format = formatSelect.value || "";
+      const memo = memoInput.value || "";
 
-      if (!finishDate && ratingSelect.value !== "") {
-        alert("완독 날짜가 없는 경우 별점은 저장되지 않습니다.");
-      }
-
-      const book = { title, author, genre, startDate, finishDate, rating, format };
+      const book = { title, author, genre, startDate, finishDate, format, memo };
 
       const books = loadBooks();
       const editIndex = editIndexInput.value;
@@ -538,6 +548,10 @@
       clearForm();
       renderList();
     });
+
+    function isFinished(book) {
+      return !!(book.finishDate);
+    }
 
     // 필터 옵션 동적 구성
     function updateFilterOptions(books) {
@@ -556,7 +570,6 @@
       const currentYear = filterYear.value;
       const currentAuthor = filterAuthor.value;
       const currentGenre = filterGenre.value;
-      const currentRating = filterRating.value;
       const currentFormat = filterFormat.value;
 
       // 연도
@@ -589,16 +602,6 @@
       });
       if (currentGenre && genres.has(currentGenre)) filterGenre.value = currentGenre;
 
-      // 별점 (고정 옵션)
-      filterRating.innerHTML =
-        '<option value="">전체</option>' +
-        '<option value="1">★☆☆☆☆</option>' +
-        '<option value="2">★★☆☆☆</option>' +
-        '<option value="3">★★★☆☆</option>' +
-        '<option value="4">★★★★☆</option>' +
-        '<option value="5">★★★★★</option>';
-      if (currentRating) filterRating.value = currentRating;
-
       // 형태는 그대로 유지
       filterFormat.value = currentFormat || "";
     }
@@ -608,28 +611,19 @@
       const authorF = filterAuthor.value;
       const genreF = filterGenre.value;
       const formatF = filterFormat.value;
-      const ratingF = filterRating.value;
 
       return booksWithIndex.filter(b => {
-        // 연도(완독일 기준)
         if (yearF) {
           if (!b.finishDate || b.finishDate.slice(0,4) !== yearF) return false;
         }
-        // 작가
         if (authorF) {
           if ((b.author || "") !== authorF) return false;
         }
-        // 분야
         if (genreF) {
           if ((b.genre || "") !== genreF) return false;
         }
-        // 형태
         if (formatF) {
           if ((b.format || "") !== formatF) return false;
-        }
-        // 별점
-        if (ratingF) {
-          if (b.rating == null || String(b.rating) !== ratingF) return false;
         }
         return true;
       });
@@ -639,14 +633,12 @@
     filterAuthor.addEventListener("change", renderList);
     filterGenre.addEventListener("change", renderList);
     filterFormat.addEventListener("change", renderList);
-    filterRating.addEventListener("change", renderList);
 
     filterResetBtn.addEventListener("click", () => {
       filterYear.value = "";
       filterAuthor.value = "";
       filterGenre.value = "";
       filterFormat.value = "";
-      filterRating.value = "";
       renderList();
     });
 
@@ -676,7 +668,7 @@
         emptyList.style.display = "none";
       }
 
-      // 정렬: 완독이면 finishDate, 아니면 startDate 기준
+      // 정렬: 완독이면 finishDate, 아니면 startDate 기준 (최신 먼저)
       const sorted = filtered.sort((a, b) => {
         const aDate = a.finishDate || a.startDate || "";
         const bDate = b.finishDate || b.startDate || "";
@@ -685,7 +677,7 @@
         if (!aDate) return 1;
         if (!bDate) return -1;
 
-        return bDate.localeCompare(aDate); // 최신 먼저
+        return bDate.localeCompare(aDate);
       });
 
       bookTable.style.display = "table";
@@ -715,15 +707,18 @@
         tdDates.innerHTML = period + `<div class="small">${statusText}</div>`;
         tr.appendChild(tdDates);
 
-        const tdRating = document.createElement("td");
-        tdRating.className = "center";
-        tdRating.textContent = item.rating == null ? "-" : "★ " + item.rating;
-        tr.appendChild(tdRating);
-
         const tdFormat = document.createElement("td");
         tdFormat.className = "center small";
         tdFormat.textContent = formatToText(item.format);
         tr.appendChild(tdFormat);
+
+        const tdMemo = document.createElement("td");
+        tdMemo.className = "center";
+        const memoBtn = document.createElement("button");
+        memoBtn.textContent = item.memo ? "보기" : "작성";
+        memoBtn.addEventListener("click", () => openMemoModal(item._index));
+        tdMemo.appendChild(memoBtn);
+        tr.appendChild(tdMemo);
 
         const tdActions = document.createElement("td");
         tdActions.className = "center actions";
@@ -746,6 +741,39 @@
       listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
     }
 
+    function openMemoModal(index) {
+      const books = loadBooks();
+      const book = books[index];
+      if (!book) return;
+
+      memoEditIndex = index;
+      memoBookInfo.textContent = `${book.title}${book.author ? " · " + book.author : ""}`;
+      memoModalText.value = book.memo || "";
+      memoModal.classList.add("active");
+      memoModalText.focus();
+    }
+
+    function closeMemoModal() {
+      memoModal.classList.remove("active");
+      memoEditIndex = null;
+      memoModalText.value = "";
+      memoBookInfo.textContent = "";
+    }
+
+    memoCancelBtn.addEventListener("click", closeMemoModal);
+
+    memoSaveBtn.addEventListener("click", () => {
+      if (memoEditIndex == null) return;
+      const books = loadBooks();
+      const book = books[memoEditIndex];
+      if (!book) return;
+      book.memo = memoModalText.value || "";
+      books[memoEditIndex] = book;
+      saveBooks(books);
+      closeMemoModal();
+      renderList();
+    });
+
     function startEdit(index) {
       const books = loadBooks();
       const book = books[index];
@@ -762,12 +790,11 @@
       genreInput.value = book.genre || "";
       startInput.value = book.startDate || "";
       finishInput.value = book.finishDate || "";
-      ratingSelect.value = book.rating == null ? "" : String(book.rating);
-      setFormatValue(book.format || "");
+      formatSelect.value = book.format || "";
+      memoInput.value = book.memo || "";
       editIndexInput.value = String(index);
       submitBtn.textContent = "수정 저장";
       resetBtn.style.display = "inline-block";
-      updateFinishDependentFields();
       titleInput.focus();
     }
 
@@ -802,17 +829,10 @@
 
       const finished = books.filter(b => b.finishDate);
 
-      // 전체 요약
       if (finished.length === 0) {
         overallStatsDiv.textContent = "완독 날짜가 있는 책이 아직 없습니다.";
       } else {
-        const ratings = finished
-          .map(b => b.rating)
-          .filter(r => r != null);
         const count = finished.length;
-        const avgRating = ratings.length
-          ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2)
-          : "-";
         const firstYear = finished
           .map(b => b.finishDate.slice(0, 4))
           .filter(y => /^\d{4}$/.test(y));
@@ -824,7 +844,6 @@
         }
         overallStatsDiv.textContent =
           `완독 ${count}권` +
-          (avgRating !== "-" ? `, 평균 별점 ${avgRating}점` : "") +
           (yearsSpan ? ` (${yearsSpan} 기준)` : "");
       }
 
@@ -835,13 +854,9 @@
         const year = b.finishDate.slice(0, 4);
         if (!/^\d{4}$/.test(year)) return;
         if (!yearStats[year]) {
-          yearStats[year] = { count: 0, ratingSum: 0, ratingCount: 0 };
+          yearStats[year] = { count: 0 };
         }
         yearStats[year].count += 1;
-        if (b.rating != null) {
-          yearStats[year].ratingSum += b.rating;
-          yearStats[year].ratingCount += 1;
-        }
       });
 
       yearTbody.innerHTML = "";
@@ -860,14 +875,8 @@
           const tdCount = document.createElement("td");
           tdCount.className = "center";
           tdCount.textContent = stat.count;
-          const tdAvg = document.createElement("td");
-          tdAvg.className = "center";
-          tdAvg.textContent = stat.ratingCount
-            ? (stat.ratingSum / stat.ratingCount).toFixed(2)
-            : "-";
           tr.appendChild(tdYear);
           tr.appendChild(tdCount);
-          tr.appendChild(tdAvg);
           yearTbody.appendChild(tr);
         });
       }
@@ -876,16 +885,12 @@
       const monthStats = {};
       finished.forEach(b => {
         if (!b.finishDate) return;
-        const ym = b.finishDate.slice(0, 7); // "YYYY-MM"
+        const ym = b.finishDate.slice(0, 7);
         if (!/^\d{4}-\d{2}$/.test(ym)) return;
         if (!monthStats[ym]) {
-          monthStats[ym] = { count: 0, ratingSum: 0, ratingCount: 0 };
+          monthStats[ym] = { count: 0 };
         }
         monthStats[ym].count += 1;
-        if (b.rating != null) {
-          monthStats[ym].ratingSum += b.rating;
-          monthStats[ym].ratingCount += 1;
-        }
       });
 
       monthTbody.innerHTML = "";
@@ -904,21 +909,14 @@
           const tdCount = document.createElement("td");
           tdCount.className = "center";
           tdCount.textContent = stat.count;
-          const tdAvg = document.createElement("td");
-          tdAvg.className = "center";
-          tdAvg.textContent = stat.ratingCount
-            ? (stat.ratingSum / stat.ratingCount).toFixed(2)
-            : "-";
           tr.appendChild(tdYm);
           tr.appendChild(tdCount);
-          tr.appendChild(tdAvg);
           monthTbody.appendChild(tr);
         });
       }
     }
 
     // 초기 세팅
-    updateFinishDependentFields();
     renderList();
   </script>
 </body>
