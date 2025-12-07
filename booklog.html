@@ -221,15 +221,13 @@
       margin-top: 12px;
     }
 
-    /* 열 너비 (4개 열) */
-    th:nth-child(1), td:nth-child(1) { width: 52%; }
-    th:nth-child(2), td:nth-child(2) { width: 28%; }
+    /* 열 너비 (제목 더 넓게) */
+    th:nth-child(1), td:nth-child(1) { width: 58%; }
+    th:nth-child(2), td:nth-child(2) { width: 22%; }
     th:nth-child(3), td:nth-child(3) { width: 10%; }
     th:nth-child(4), td:nth-child(4) { width: 10%; }
 
-    /* 형태 칸 줄바꿈 방지 */
     td.format-cell { white-space: nowrap; }
-
     .nowrap { white-space: nowrap; }
 
     /* stats */
@@ -445,7 +443,7 @@
       <thead>
         <tr>
           <th>도서</th>
-          <th>독서 기간</th>
+          <th>읽은 날짜</th>
           <th class="center">형태</th>
           <th class="center">메모</th>
         </tr>
@@ -499,7 +497,7 @@
   <div id="memo-modal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h2>메मो</h2>
+        <h2>메모</h2>
         <div id="memo-book-info" class="small"></div>
       </div>
       <textarea id="memo-modal-text"></textarea>
@@ -655,6 +653,18 @@
       return !!(book.finishDate);
     }
 
+    // 읽는데 걸린 일수 계산 (포함해서 +1일)
+    function calcReadingDays(startDate, finishDate) {
+      if (!startDate || !finishDate) return null;
+      const s = new Date(startDate);
+      const f = new Date(finishDate);
+      if (isNaN(s.getTime()) || isNaN(f.getTime())) return null;
+      const diffMs = f.getTime() - s.getTime();
+      const diffDays = Math.round(diffMs / 86400000) + 1;
+      if (diffDays < 1) return null;
+      return diffDays;
+    }
+
     function updateFilterOptions(books) {
       const years = new Set();
       const authors = new Set();
@@ -783,6 +793,7 @@
         const tr = document.createElement("tr");
         const finished = isFinished(item);
 
+        // 도서 열
         const tdTitle = document.createElement("td");
         tdTitle.style.cursor = "pointer";
         tdTitle.title = "누르면 수정";
@@ -801,11 +812,17 @@
         });
         tr.appendChild(tdTitle);
 
+        // 읽은 날짜 열
         const tdDates = document.createElement("td");
         let period = "";
         if (item.startDate && item.finishDate) {
-          period = `<span class="nowrap">${item.startDate} ~ ${item.finishDate}</span>`;
-        } else if (item.startDate || item.finishDate) {
+          const days = calcReadingDays(item.startDate, item.finishDate);
+          if (days) {
+            period = `<span class="nowrap">${item.finishDate}(${days}일)</span>`;
+          } else {
+            period = `<span class="nowrap">${item.finishDate}</span>`;
+          }
+        } else if (item.finishDate || item.startDate) {
           const d = item.finishDate || item.startDate;
           period = `<span class="nowrap">${d}</span>`;
         } else {
@@ -815,11 +832,13 @@
         tdDates.innerHTML = period + `<div class="small">${statusText}</div>`;
         tr.appendChild(tdDates);
 
+        // 형태
         const tdFormat = document.createElement("td");
         tdFormat.className = "center small format-cell";
         tdFormat.textContent = formatToText(item.format);
         tr.appendChild(tdFormat);
 
+        // 메모 버튼
         const tdMemo = document.createElement("td");
         tdMemo.className = "center";
         const memoBtn = document.createElement("button");
