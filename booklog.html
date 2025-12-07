@@ -187,6 +187,13 @@
       margin-top: 12px;
     }
 
+    /* 열 너비 조정 */
+    th:nth-child(1), td:nth-child(1) { width: 46%; }
+    th:nth-child(2), td:nth-child(2) { width: 24%; }
+    th:nth-child(3), td:nth-child(3) { width: 11%; }
+    th:nth-child(4), td:nth-child(4) { width: 9%; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; }
+
     /* 형태 칸 줄바꿈 방지 */
     td.format-cell {
       white-space: nowrap;
@@ -374,7 +381,7 @@
       <thead>
         <tr>
           <th>도서</th>
-          <th>기간 / 상태</th>
+          <th>독서 기간</th>
           <th class="center">형태</th>
           <th class="center">메모</th>
           <th class="center">작업</th>
