@@ -410,7 +410,7 @@
         <thead>
           <tr>
             <th>연도</th>
-            <th class="center">완독 권수</th>
+            <th class="center">읽은 책</th>
           </tr>
         </thead>
         <tbody id="year-tbody"></tbody>
@@ -424,7 +424,7 @@
         <thead>
           <tr>
             <th>연-월</th>
-            <th class="center">완독 권수</th>
+            <th class="center">읽은 책</th>
           </tr>
         </thead>
         <tbody id="month-tbody"></tbody>
@@ -887,7 +887,7 @@
           tdYear.textContent = year + "년";
           const tdCount = document.createElement("td");
           tdCount.className = "center";
-          tdCount.textContent = stat.count;
+          tdCount.textContent = stat.count + "권";
           tr.appendChild(tdYear);
           tr.appendChild(tdCount);
           yearTbody.appendChild(tr);
@@ -921,7 +921,7 @@
           tdYm.textContent = ym;
           const tdCount = document.createElement("td");
           tdCount.className = "center";
-          tdCount.textContent = stat.count;
+          tdCount.textContent = stat.count + "권";
           tr.appendChild(tdYm);
           tr.appendChild(tdCount);
           monthTbody.appendChild(tr);
@@ -934,3 +934,4 @@
   </script>
 </body>
 </html>
+
