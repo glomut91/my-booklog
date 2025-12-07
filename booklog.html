@@ -187,6 +187,11 @@
       margin-top: 12px;
     }
 
+    /* 형태 칸 줄바꿈 방지 */
+    td.format-cell {
+      white-space: nowrap;
+    }
+
     /* stats */
     .stats-block {
       margin-bottom: 20px;
@@ -368,7 +373,7 @@
     <table id="book-table" style="display:none;">
       <thead>
         <tr>
-          <th>제목 / 작가 / 분야</th>
+          <th>도서</th>
           <th>기간 / 상태</th>
           <th class="center">형태</th>
           <th class="center">메모</th>
@@ -708,17 +713,17 @@
         tr.appendChild(tdDates);
 
         const tdFormat = document.createElement("td");
-        tdFormat.className = "center small";
+        tdFormat.className = "center small format-cell";
         tdFormat.textContent = formatToText(item.format);
         tr.appendChild(tdFormat);
 
-       const tdMemo = document.createElement("td");
-tdMemo.className = "center";
-const memoBtn = document.createElement("button");
-memoBtn.textContent = "📝";
-memoBtn.addEventListener("click", () => openMemoModal(item._index));
-tdMemo.appendChild(memoBtn);
-tr.appendChild(tdMemo);
+        const tdMemo = document.createElement("td");
+        tdMemo.className = "center";
+        const memoBtn = document.createElement("button");
+        memoBtn.textContent = "📝";
+        memoBtn.addEventListener("click", () => openMemoModal(item._index));
+        tdMemo.appendChild(memoBtn);
+        tr.appendChild(tdMemo);
 
         const tdActions = document.createElement("td");
         tdActions.className = "center actions";
@@ -921,4 +926,3 @@ tr.appendChild(tdMemo);
   </script>
 </body>
 </html>
-
