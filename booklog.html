@@ -221,7 +221,7 @@
       margin-top: 12px;
     }
 
-    /* 열 너비 (제목 더 넓게) */
+    /* 열 너비 */
     th:nth-child(1), td:nth-child(1) { width: 58%; }
     th:nth-child(2), td:nth-child(2) { width: 22%; }
     th:nth-child(3), td:nth-child(3) { width: 10%; }
@@ -404,16 +404,20 @@
       <div class="filters-title">필터</div>
       <div class="filters-row">
         <div class="filter-group">
-          <label for="filter-year">연도(완독 기준)</label>
+          <label for="filter-year">연도</label>
           <select id="filter-year">
             <option value="">전체</option>
           </select>
         </div>
         <div class="filter-group">
+          <label for="filter-title">제목</label>
+          <input type="text" id="filter-title" placeholder="제목 검색" />
+        </div>
+      </div>
+      <div class="filters-row">
+        <div class="filter-group">
           <label for="filter-author">작가</label>
-          <select id="filter-author">
-            <option value="">전체</option>
-          </select>
+          <input type="text" id="filter-author" placeholder="작가 검색" />
         </div>
         <div class="filter-group">
           <label for="filter-genre">분야</label>
@@ -541,6 +545,7 @@
     const monthEmpty = document.getElementById("month-empty");
 
     const filterYear = document.getElementById("filter-year");
+    const filterTitle = document.getElementById("filter-title");
     const filterAuthor = document.getElementById("filter-author");
     const filterGenre = document.getElementById("filter-genre");
     const filterFormat = document.getElementById("filter-format");
@@ -667,22 +672,20 @@
 
     function updateFilterOptions(books) {
       const years = new Set();
-      const authors = new Set();
       const genres = new Set();
 
       books.forEach(b => {
         if (b.finishDate && /^\d{4}/.test(b.finishDate)) {
           years.add(b.finishDate.slice(0,4));
         }
-        if (b.author) authors.add(b.author);
         if (b.genre) genres.add(b.genre);
       });
 
       const currentYear = filterYear.value;
-      const currentAuthor = filterAuthor.value;
       const currentGenre = filterGenre.value;
       const currentFormat = filterFormat.value;
 
+      // 연도 select
       filterYear.innerHTML = '<option value="">전체</option>';
       Array.from(years).sort((a,b)=>b.localeCompare(a)).forEach(y => {
         const opt = document.createElement("option");
@@ -692,15 +695,7 @@
       });
       if (currentYear && years.has(currentYear)) filterYear.value = currentYear;
 
-      filterAuthor.innerHTML = '<option value="">전체</option>';
-      Array.from(authors).sort((a,b)=>a.localeCompare(b)).forEach(a => {
-        const opt = document.createElement("option");
-        opt.value = a;
-        opt.textContent = a;
-        filterAuthor.appendChild(opt);
-      });
-      if (currentAuthor && authors.has(currentAuthor)) filterAuthor.value = currentAuthor;
-
+      // 분야 select
       filterGenre.innerHTML = '<option value="">전체</option>';
       Array.from(genres).sort((a,b)=>a.localeCompare(b)).forEach(g => {
         const opt = document.createElement("option");
@@ -710,25 +705,41 @@
       });
       if (currentGenre && genres.has(currentGenre)) filterGenre.value = currentGenre;
 
+      // 형태 select 값 유지
       filterFormat.value = currentFormat || "";
     }
 
     function applyFilters(booksWithIndex) {
-      const yearF = filterYear.value;
-      const authorF = filterAuthor.value;
-      const genreF = filterGenre.value;
+      const yearF   = filterYear.value;
+      const titleF  = filterTitle.value.trim().toLocaleLowerCase();
+      const authorF = filterAuthor.value.trim().toLocaleLowerCase();
+      const genreF  = filterGenre.value;
       const formatF = filterFormat.value;
 
       return booksWithIndex.filter(b => {
+        // 연도(완독 기준)
         if (yearF) {
           if (!b.finishDate || b.finishDate.slice(0,4) !== yearF) return false;
         }
-        if (authorF) {
-          if ((b.author || "") !== authorF) return false;
+
+        // 제목 부분 검색
+        if (titleF) {
+          const t = (b.title || "").toLocaleLowerCase();
+          if (!t.includes(titleF)) return false;
         }
+
+        // 작가 부분 검색
+        if (authorF) {
+          const a = (b.author || "").toLocaleLowerCase();
+          if (!a.includes(authorF)) return false;
+        }
+
+        // 분야 select
         if (genreF) {
           if ((b.genre || "") !== genreF) return false;
         }
+
+        // 형태 select
         if (formatF) {
           if ((b.format || "") !== formatF) return false;
         }
@@ -736,13 +747,16 @@
       });
     }
 
+    // 필터 이벤트
     filterYear.addEventListener("change", renderList);
-    filterAuthor.addEventListener("change", renderList);
     filterGenre.addEventListener("change", renderList);
     filterFormat.addEventListener("change", renderList);
+    filterTitle.addEventListener("input", renderList);
+    filterAuthor.addEventListener("input", renderList);
 
     filterResetBtn.addEventListener("click", () => {
       filterYear.value = "";
+      filterTitle.value = "";
       filterAuthor.value = "";
       filterGenre.value = "";
       filterFormat.value = "";
@@ -775,6 +789,7 @@
         emptyList.style.display = "none";
       }
 
+      // 정렬: 완독이면 finishDate, 아니면 startDate 기준 (최신 먼저)
       const sorted = filtered.sort((a, b) => {
         const aDate = a.finishDate || a.startDate || "";
         const bDate = b.finishDate || b.startDate || "";
@@ -1021,6 +1036,7 @@
       }
     }
 
+    // 초기 렌더
     renderList();
   </script>
 </body>
