@@ -709,15 +709,26 @@
         emptyList.textContent = "아직 등록된 책이 없습니다.";
       }
 
-      // 시작 날짜 기준 내림차순 정렬 (없으면 뒤로)
-      const sorted = filtered
-        .map((b, idx) => ({ ...b, _index: idx }))
-        .sort((a, b) => {
-          if (!a.startDate && !b.startDate) return 0;
-          if (!a.startDate) return 1;
-          if (!b.startDate) return -1;
-          return b.startDate.localeCompare(a.startDate);
-        });
+// 읽는 중: 시작날짜 기준
+// 완독: 완독날짜 기준
+// 날짜가 최신일수록 위로 정렬
+const sorted = filtered
+  .map((b, idx) => ({ ...b, _index: idx }))
+  .sort((a, b) => {
+    const aDate = a.status === "finished" && a.finishDate 
+      ? a.finishDate 
+      : (a.startDate || "");
+    const bDate = b.status === "finished" && b.finishDate 
+      ? b.finishDate 
+      : (b.startDate || "");
+
+    // 날짜가 모두 없으면 같은 순위
+    if (!aDate && !bDate) return 0;
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+
+    return bDate.localeCompare(aDate);  // 최신 날짜 먼저
+  });
 
       bookTable.style.display = "table";
       bookTbody.innerHTML = "";
@@ -993,4 +1004,5 @@
   </script>
 </body>
 </html>
+
 
