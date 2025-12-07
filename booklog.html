@@ -179,6 +179,7 @@
     .actions button {
       font-size: 0.78rem;
       margin-right: 4px;
+      white-space: nowrap; /* 수정/삭제 줄바꿈 방지 */
     }
     #empty-list {
       text-align: center;
@@ -188,11 +189,11 @@
     }
 
     /* 열 너비 조정 */
-    th:nth-child(1), td:nth-child(1) { width: 46%; }
-    th:nth-child(2), td:nth-child(2) { width: 24%; }
-    th:nth-child(3), td:nth-child(3) { width: 11%; }
-    th:nth-child(4), td:nth-child(4) { width: 9%; }
-    th:nth-child(5), td:nth-child(5) { width: 10%; }
+    th:nth-child(1), td:nth-child(1) { width: 42%; }
+    th:nth-child(2), td:nth-child(2) { width: 28%; }
+    th:nth-child(3), td:nth-child(3) { width: 10%; }
+    th:nth-child(4), td:nth-child(4) { width: 8%; }
+    th:nth-child(5), td:nth-child(5) { width: 12%; }
 
     /* 형태 칸 줄바꿈 방지 */
     td.format-cell {
@@ -297,17 +298,6 @@
           <input type="text" id="genre" />
         </div>
         <div class="form-group">
-          <label for="start-date">읽기 시작한 날짜</label>
-          <input type="date" id="start-date" />
-        </div>
-        <div class="form-group">
-          <label for="finish-date">완독한 날짜</label>
-          <input type="date" id="finish-date" />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
           <label for="format">형태</label>
           <select id="format">
             <option value="">선택</option>
@@ -315,6 +305,17 @@
             <option value="paper">종이책</option>
             <option value="audio">오디오북</option>
           </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="start-date">읽기 시작한 날짜</label>
+          <input type="date" id="start-date" />
+        </div>
+        <div class="form-group">
+          <label for="finish-date">완독한 날짜</label>
+          <input type="date" id="finish-date" />
         </div>
       </div>
 
