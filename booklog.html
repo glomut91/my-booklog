@@ -2,21 +2,34 @@
 <html lang="ko">
 <head>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#f4f7ff">
   <meta charset="UTF-8" />
   <title>독서 기록</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --primary: #4f8df5;        /* 아이콘 테두리 느낌 파랑 */
+      --primary-soft: #e9f1ff;   /* 아주 옅은 파랑 */
+      --primary-strong: #2b63d6;
+      --border: #d6e1f7;
+      --bg: #f4f7ff;
+      --text-main: #111111;
+      --text-muted: #667085;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       max-width: 900px;
       margin: 20px auto;
       padding: 0 12px 40px;
+      background: var(--bg);
+      color: var(--text-main);
     }
     h1 {
       text-align: center;
       font-size: 1.7rem;
       margin-bottom: 8px;
+      color: var(--primary-strong);
     }
     .tabs {
       display: flex;
@@ -26,16 +39,19 @@
     .tab-btn {
       flex: 1;
       padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: #f7f7f7;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
       cursor: pointer;
       font-size: 0.95rem;
+      color: var(--text-main);
     }
     .tab-btn.active {
       font-weight: 600;
-      border-color: #888;
-      background: #fff;
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-strong);
+      box-shadow: 0 2px 6px rgba(79,141,245,0.15);
     }
 
     .section {
@@ -47,10 +63,12 @@
 
     /* form */
     form {
-      border: 1px solid #eee;
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 12px;
       margin-bottom: 16px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.03);
     }
     .form-row {
       display: flex;
@@ -67,16 +85,25 @@
     }
     label {
       margin-bottom: 4px;
+      color: var(--text-muted);
     }
     input[type="text"],
     input[type="date"],
     select,
     textarea {
       padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+      border-radius: 8px;
+      border: 1px solid var(--border);
       font-size: 0.9rem;
       font-family: inherit;
+      background: #ffffff;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(79,141,245,0.15);
     }
     textarea {
       resize: vertical;
@@ -92,32 +119,41 @@
     }
     .primary {
       border: none;
-      border-radius: 6px;
-      padding: 8px 12px;
+      border-radius: 999px;
+      padding: 8px 16px;
       font-size: 0.9rem;
+      background: var(--primary);
+      color: #ffffff;
     }
     .primary:active {
       transform: scale(0.98);
     }
     .secondary {
-      border-radius: 6px;
-      padding: 6px 10px;
+      border-radius: 999px;
+      padding: 6px 12px;
       font-size: 0.85rem;
-      border: 1px solid #ccc;
-      background: #f7f7f7;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--primary-strong);
+    }
+    .secondary:active {
+      transform: scale(0.98);
     }
 
     /* filters */
     .filters {
-      border: 1px solid #eee;
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 10px;
       margin-bottom: 12px;
       font-size: 0.85rem;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.03);
     }
     .filters-title {
       font-weight: 600;
       margin-bottom: 6px;
+      color: var(--primary-strong);
     }
     .filters-row {
       display: flex;
@@ -134,7 +170,7 @@
     .filter-group label {
       margin-bottom: 2px;
       font-size: 0.78rem;
-      color: #555;
+      color: var(--text-muted);
     }
     .filters-actions {
       display: flex;
@@ -147,44 +183,54 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 0.85rem;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.03);
     }
     th, td {
-      border-bottom: 1px solid #eee;
-      padding: 6px 4px;
+      border-bottom: 1px solid #eef1f8;
+      padding: 6px 6px;
       text-align: left;
       vertical-align: top;
     }
     th {
-      background: #fafafa;
+      background: var(--primary-soft);
       font-weight: 600;
+      color: var(--primary-strong);
     }
     tr:nth-child(even) td {
-      background: #fcfcfc;
+      background: #fafbff;
     }
     .center {
       text-align: center;
     }
     .small {
       font-size: 0.8rem;
-      color: #777;
+      color: var(--text-muted);
     }
     .tag {
       padding: 2px 6px;
       border-radius: 999px;
-      border: 1px solid #ddd;
+      border: 1px solid #e0e6f5;
       font-size: 0.78rem;
       display: inline-block;
       margin-right: 4px;
+      background: #f5f7ff;
+      color: #4b5563;
     }
     .actions button {
       font-size: 0.78rem;
       margin-right: 4px;
       white-space: nowrap; /* 수정/삭제 줄바꿈 방지 */
+      border-radius: 999px;
+      border: 1px solid #d9e2ff;
+      background: #ffffff;
     }
     #empty-list {
       text-align: center;
       font-size: 0.9rem;
-      color: #888;
+      color: var(--text-muted);
       margin-top: 12px;
     }
 
@@ -203,17 +249,23 @@
     /* stats */
     .stats-block {
       margin-bottom: 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 10px 4px;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.03);
     }
     .stats-title {
       font-weight: 600;
       margin-bottom: 6px;
+      color: var(--primary-strong);
     }
 
     /* memo modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(15,23,42,0.35);
       display: none;
       align-items: center;
       justify-content: center;
@@ -223,19 +275,21 @@
       display: flex;
     }
     .modal {
-      background: #fff;
-      border-radius: 8px;
+      background: #ffffff;
+      border-radius: 14px;
       padding: 16px;
       max-width: 600px;
       width: 100%;
       max-height: 80vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 20px 40px rgba(15,23,42,0.32);
+      border: 1px solid var(--border);
     }
     .modal h2 {
       margin: 0 0 6px;
       font-size: 1.1rem;
+      color: var(--primary-strong);
     }
     .modal-header {
       margin-bottom: 8px;
@@ -248,6 +302,33 @@
     .modal .btn-row {
       margin-top: 10px;
       justify-content: flex-end;
+    }
+
+    /* toast */
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 56px;
+      transform: translateX(-50%) translateY(8px);
+      background: rgba(26, 86, 219, 0.96);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 10000;
+      max-width: 90%;
+      text-align: center;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    #toast.toast-show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
     @media (max-width: 640px) {
@@ -265,6 +346,9 @@
       .modal {
         max-width: 95%;
         max-height: 90vh;
+      }
+      #toast {
+        bottom: 40px;
       }
     }
   </style>
@@ -448,6 +532,9 @@
     </div>
   </div>
 
+  <!-- toast -->
+  <div id="toast"></div>
+
   <script>
     const STORAGE_KEY = "reading_log_v1";
 
@@ -490,6 +577,18 @@
     const memoCancelBtn = document.getElementById("memo-cancel-btn");
     const memoSaveBtn = document.getElementById("memo-save-btn");
     let memoEditIndex = null;
+
+    // toast
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.classList.add("toast-show");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove("toast-show");
+      }, 2300);
+    }
 
     /* 탭 전환 */
     document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -536,7 +635,7 @@
       e.preventDefault();
       const title = titleInput.value.trim();
       if (!title) {
-        alert("제목은 필수입니다.");
+        showToast("제목은 필수 항목입니다.");
         return;
       }
 
@@ -563,7 +662,7 @@
       saveBooks(books);
       clearForm();
       renderList();
-      alert(message);
+      showToast(message);
     });
 
     function isFinished(book) {
@@ -789,6 +888,7 @@
       saveBooks(books);
       closeMemoModal();
       renderList();
+      showToast("메모가 저장되었습니다.");
     });
 
     function startEdit(index) {
@@ -822,6 +922,7 @@
       saveBooks(books);
       clearForm();
       renderList();
+      showToast("기록이 삭제되었습니다.");
     }
 
     function formatToText(format) {
