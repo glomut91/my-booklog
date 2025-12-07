@@ -8,8 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
-      --primary: #4f8df5;        /* 아이콘 테두리 느낌 파랑 */
-      --primary-soft: #e9f1ff;   /* 아주 옅은 파랑 */
+      --primary: #4f8df5;
+      --primary-soft: #e9f1ff;
       --primary-strong: #2b63d6;
       --border: #d6e1f7;
       --bg: #f4f7ff;
@@ -54,12 +54,8 @@
       box-shadow: 0 2px 6px rgba(79,141,245,0.15);
     }
 
-    .section {
-      display: none;
-    }
-    .section.active {
-      display: block;
-    }
+    .section { display: none; }
+    .section.active { display: block; }
 
     /* form */
     form {
@@ -105,18 +101,16 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 2px rgba(79,141,245,0.15);
     }
-    textarea {
-      resize: vertical;
-    }
+    textarea { resize: vertical; }
+
     .btn-row {
       display: flex;
       justify-content: flex-end;
       gap: 8px;
       margin-top: 6px;
+      align-items: center;
     }
-    button {
-      cursor: pointer;
-    }
+    button { cursor: pointer; }
     .primary {
       border: none;
       border-radius: 999px;
@@ -125,9 +119,7 @@
       background: var(--primary);
       color: #ffffff;
     }
-    .primary:active {
-      transform: scale(0.98);
-    }
+    .primary:active { transform: scale(0.98); }
     .secondary {
       border-radius: 999px;
       padding: 6px 12px;
@@ -136,9 +128,16 @@
       background: #ffffff;
       color: var(--primary-strong);
     }
-    .secondary:active {
-      transform: scale(0.98);
+    .secondary:active { transform: scale(0.98); }
+    .danger {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      border: 1px solid #fca5a5;
+      background: #fee2e2;
+      color: #b91c1c;
     }
+    .danger:active { transform: scale(0.98); }
 
     /* filters */
     .filters {
@@ -199,16 +198,11 @@
       font-weight: 600;
       color: var(--primary-strong);
     }
-    tr:nth-child(even) td {
-      background: #fafbff;
-    }
-    .center {
-      text-align: center;
-    }
-    .small {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
+    tr:nth-child(even) td { background: #fafbff; }
+
+    .center { text-align: center; }
+    .small  { font-size: 0.8rem; color: var(--text-muted); }
+
     .tag {
       padding: 2px 6px;
       border-radius: 999px;
@@ -219,14 +213,7 @@
       background: #f5f7ff;
       color: #4b5563;
     }
-    .actions button {
-      font-size: 0.78rem;
-      margin-right: 4px;
-      white-space: nowrap; /* 수정/삭제 줄바꿈 방지 */
-      border-radius: 999px;
-      border: 1px solid #d9e2ff;
-      background: #ffffff;
-    }
+
     #empty-list {
       text-align: center;
       font-size: 0.9rem;
@@ -234,17 +221,16 @@
       margin-top: 12px;
     }
 
-    /* 열 너비 조정 */
-    th:nth-child(1), td:nth-child(1) { width: 42%; }
+    /* 열 너비 (4개 열) */
+    th:nth-child(1), td:nth-child(1) { width: 52%; }
     th:nth-child(2), td:nth-child(2) { width: 28%; }
     th:nth-child(3), td:nth-child(3) { width: 10%; }
-    th:nth-child(4), td:nth-child(4) { width: 8%; }
-    th:nth-child(5), td:nth-child(5) { width: 12%; }
+    th:nth-child(4), td:nth-child(4) { width: 10%; }
 
     /* 형태 칸 줄바꿈 방지 */
-    td.format-cell {
-      white-space: nowrap;
-    }
+    td.format-cell { white-space: nowrap; }
+
+    .nowrap { white-space: nowrap; }
 
     /* stats */
     .stats-block {
@@ -271,9 +257,7 @@
       justify-content: center;
       z-index: 999;
     }
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
     .modal {
       background: #ffffff;
       border-radius: 14px;
@@ -291,9 +275,7 @@
       font-size: 1.1rem;
       color: var(--primary-strong);
     }
-    .modal-header {
-      margin-bottom: 8px;
-    }
+    .modal-header { margin-bottom: 8px; }
     .modal textarea {
       flex: 1;
       min-height: 160px;
@@ -340,16 +322,12 @@
       tr {
         font-size: 0.8rem;
       }
-      h1 {
-        font-size: 1.4rem;
-      }
+      h1 { font-size: 1.4rem; }
       .modal {
         max-width: 95%;
         max-height: 90vh;
       }
-      #toast {
-        bottom: 40px;
-      }
+      #toast { bottom: 40px; }
     }
   </style>
 </head>
@@ -411,6 +389,7 @@
       </div>
 
       <div class="btn-row">
+        <button type="button" class="danger" id="delete-btn" style="display:none; margin-right:auto;">삭제</button>
         <button type="button" class="secondary" id="reset-btn" style="display:none;">입력 취소</button>
         <button type="submit" class="primary" id="submit-btn">추가</button>
       </div>
@@ -421,7 +400,7 @@
     </form>
   </div>
 
-  <!-- 기록 탭: 필터 + 리스트 -->
+  <!-- 기록 탭 -->
   <div id="list-section" class="section">
     <div class="filters">
       <div class="filters-title">필터</div>
@@ -469,7 +448,6 @@
           <th>독서 기간</th>
           <th class="center">형태</th>
           <th class="center">메모</th>
-          <th class="center">작업</th>
         </tr>
       </thead>
       <tbody id="book-tbody"></tbody>
@@ -517,11 +495,11 @@
     </div>
   </div>
 
-  <!-- 메모 보기/수정 모달 -->
+  <!-- 메모 모달 -->
   <div id="memo-modal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h2>메모</h2>
+        <h2>메मो</h2>
         <div id="memo-book-info" class="small"></div>
       </div>
       <textarea id="memo-modal-text"></textarea>
@@ -549,6 +527,7 @@
     const editIndexInput = document.getElementById("edit-index");
     const submitBtn = document.getElementById("submit-btn");
     const resetBtn = document.getElementById("reset-btn");
+    const deleteBtn = document.getElementById("delete-btn");
 
     const bookTable = document.getElementById("book-table");
     const bookTbody = document.getElementById("book-tbody");
@@ -563,14 +542,12 @@
     const monthTbody = document.getElementById("month-tbody");
     const monthEmpty = document.getElementById("month-empty");
 
-    // 필터 요소
     const filterYear = document.getElementById("filter-year");
     const filterAuthor = document.getElementById("filter-author");
     const filterGenre = document.getElementById("filter-genre");
     const filterFormat = document.getElementById("filter-format");
     const filterResetBtn = document.getElementById("filter-reset-btn");
 
-    // 메모 모달 요소
     const memoModal = document.getElementById("memo-modal");
     const memoBookInfo = document.getElementById("memo-book-info");
     const memoModalText = document.getElementById("memo-modal-text");
@@ -578,7 +555,6 @@
     const memoSaveBtn = document.getElementById("memo-save-btn");
     let memoEditIndex = null;
 
-    // toast
     let toastTimeout;
     function showToast(msg) {
       const toast = document.getElementById("toast");
@@ -626,10 +602,20 @@
       editIndexInput.value = "";
       submitBtn.textContent = "추가";
       resetBtn.style.display = "none";
+      deleteBtn.style.display = "none";
       formatSelect.value = "";
     }
 
     resetBtn.addEventListener("click", clearForm);
+
+    deleteBtn.addEventListener("click", () => {
+      const idxStr = editIndexInput.value;
+      if (idxStr === "") return;
+      const idx = Number(idxStr);
+      if (!Number.isInteger(idx)) return;
+      if (!confirm("이 기록을 삭제할까요?")) return;
+      deleteBook(idx);
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -669,7 +655,6 @@
       return !!(book.finishDate);
     }
 
-    // 필터 옵션 동적 구성
     function updateFilterOptions(books) {
       const years = new Set();
       const authors = new Set();
@@ -688,7 +673,6 @@
       const currentGenre = filterGenre.value;
       const currentFormat = filterFormat.value;
 
-      // 연도
       filterYear.innerHTML = '<option value="">전체</option>';
       Array.from(years).sort((a,b)=>b.localeCompare(a)).forEach(y => {
         const opt = document.createElement("option");
@@ -698,7 +682,6 @@
       });
       if (currentYear && years.has(currentYear)) filterYear.value = currentYear;
 
-      // 작가
       filterAuthor.innerHTML = '<option value="">전체</option>';
       Array.from(authors).sort((a,b)=>a.localeCompare(b)).forEach(a => {
         const opt = document.createElement("option");
@@ -708,7 +691,6 @@
       });
       if (currentAuthor && authors.has(currentAuthor)) filterAuthor.value = currentAuthor;
 
-      // 분야
       filterGenre.innerHTML = '<option value="">전체</option>';
       Array.from(genres).sort((a,b)=>a.localeCompare(b)).forEach(g => {
         const opt = document.createElement("option");
@@ -718,7 +700,6 @@
       });
       if (currentGenre && genres.has(currentGenre)) filterGenre.value = currentGenre;
 
-      // 형태는 그대로 유지
       filterFormat.value = currentFormat || "";
     }
 
@@ -784,7 +765,6 @@
         emptyList.style.display = "none";
       }
 
-      // 정렬: 완독이면 finishDate, 아니면 startDate 기준 (최신 먼저)
       const sorted = filtered.sort((a, b) => {
         const aDate = a.finishDate || a.startDate || "";
         const bDate = b.finishDate || b.startDate || "";
@@ -804,6 +784,8 @@
         const finished = isFinished(item);
 
         const tdTitle = document.createElement("td");
+        tdTitle.style.cursor = "pointer";
+        tdTitle.title = "누르면 수정";
         let html = `<div>${escapeHtml(item.title)}</div>`;
         if (item.author) {
           html += `<div class="small">${escapeHtml(item.author)}</div>`;
@@ -812,13 +794,23 @@
           html += `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>`;
         }
         tdTitle.innerHTML = html;
+        tdTitle.addEventListener("click", () => {
+          if (confirm("이 책 정보를 수정하시겠습니까?")) {
+            startEdit(item._index);
+          }
+        });
         tr.appendChild(tdTitle);
 
         const tdDates = document.createElement("td");
         let period = "";
-        if (item.startDate) period += item.startDate;
-        if (item.finishDate) period += (period ? " ~ " : "") + item.finishDate;
-        if (!period) period = "<span class='small'>날짜 없음</span>";
+        if (item.startDate && item.finishDate) {
+          period = `<span class="nowrap">${item.startDate} ~ ${item.finishDate}</span>`;
+        } else if (item.startDate || item.finishDate) {
+          const d = item.finishDate || item.startDate;
+          period = `<span class="nowrap">${d}</span>`;
+        } else {
+          period = "<span class='small'>날짜 없음</span>";
+        }
         const statusText = finished ? "완독" : "읽는 중";
         tdDates.innerHTML = period + `<div class="small">${statusText}</div>`;
         tr.appendChild(tdDates);
@@ -835,20 +827,6 @@
         memoBtn.addEventListener("click", () => openMemoModal(item._index));
         tdMemo.appendChild(memoBtn);
         tr.appendChild(tdMemo);
-
-        const tdActions = document.createElement("td");
-        tdActions.className = "center actions";
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "수정";
-        editBtn.addEventListener("click", () => startEdit(item._index));
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "삭제";
-        delBtn.addEventListener("click", () => deleteBook(item._index));
-
-        tdActions.appendChild(editBtn);
-        tdActions.appendChild(delBtn);
-        tr.appendChild(tdActions);
 
         bookTbody.appendChild(tr);
       });
@@ -896,7 +874,6 @@
       const book = books[index];
       if (!book) return;
 
-      // 입력 탭으로 전환
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
       document.querySelector('.tab-btn[data-tab="input-section"]').classList.add("active");
@@ -912,11 +889,11 @@
       editIndexInput.value = String(index);
       submitBtn.textContent = "수정 저장";
       resetBtn.style.display = "inline-block";
+      deleteBtn.style.display = "inline-block";
       titleInput.focus();
     }
 
     function deleteBook(index) {
-      if (!confirm("이 기록을 삭제할까요?")) return;
       const books = loadBooks();
       books.splice(index, 1);
       saveBooks(books);
@@ -941,10 +918,8 @@
         .replace(/>/g, "&gt;");
     }
 
-    /* 통계 렌더링 */
     function renderStats() {
       const books = loadBooks();
-
       const finished = books.filter(b => b.finishDate);
 
       if (finished.length === 0) {
@@ -961,19 +936,15 @@
           yearsSpan = (minY === maxY) ? `${minY}년` : `${minY}~${maxY}년`;
         }
         overallStatsDiv.textContent =
-          `완독 ${count}권` +
-          (yearsSpan ? ` (${yearsSpan} 기준)` : "");
+          `완독 ${count}권` + (yearsSpan ? ` (${yearsSpan} 기준)` : "");
       }
 
-      // 연도별 통계
       const yearStats = {};
       finished.forEach(b => {
         if (!b.finishDate) return;
         const year = b.finishDate.slice(0, 4);
         if (!/^\d{4}$/.test(year)) return;
-        if (!yearStats[year]) {
-          yearStats[year] = { count: 0 };
-        }
+        if (!yearStats[year]) yearStats[year] = { count: 0 };
         yearStats[year].count += 1;
       });
 
@@ -999,15 +970,12 @@
         });
       }
 
-      // 월별 통계 (YYYY-MM)
       const monthStats = {};
       finished.forEach(b => {
         if (!b.finishDate) return;
         const ym = b.finishDate.slice(0, 7);
         if (!/^\d{4}-\d{2}$/.test(ym)) return;
-        if (!monthStats[ym]) {
-          monthStats[ym] = { count: 0 };
-        }
+        if (!monthStats[ym]) monthStats[ym] = { count: 0 };
         monthStats[ym].count += 1;
       });
 
@@ -1034,7 +1002,6 @@
       }
     }
 
-    // 초기 세팅
     renderList();
   </script>
 </body>
