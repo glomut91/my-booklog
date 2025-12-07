@@ -712,13 +712,13 @@
         tdFormat.textContent = formatToText(item.format);
         tr.appendChild(tdFormat);
 
-        const tdMemo = document.createElement("td");
-        tdMemo.className = "center";
-        const memoBtn = document.createElement("button");
-        memoBtn.textContent = item.memo ? "보기" : "작성";
-        memoBtn.addEventListener("click", () => openMemoModal(item._index));
-        tdMemo.appendChild(memoBtn);
-        tr.appendChild(tdMemo);
+       const tdMemo = document.createElement("td");
+tdMemo.className = "center";
+const memoBtn = document.createElement("button");
+memoBtn.textContent = "📝";
+memoBtn.addEventListener("click", () => openMemoModal(item._index));
+tdMemo.appendChild(memoBtn);
+tr.appendChild(tdMemo);
 
         const tdActions = document.createElement("td");
         tdActions.className = "center actions";
@@ -921,3 +921,4 @@
   </script>
 </body>
 </html>
+
