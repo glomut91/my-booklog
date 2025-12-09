@@ -230,6 +230,22 @@
     td.format-cell { white-space: nowrap; }
     .nowrap { white-space: nowrap; }
 
+    /* memo button */
+    .memo-btn {
+      border-radius: 999px;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.9rem;
+    }
+    .memo-btn.has-memo {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+    .memo-btn.no-memo {
+      opacity: 0.45;
+    }
+
     /* stats */
     .stats-block {
       margin-bottom: 20px;
@@ -428,7 +444,7 @@
         </div>
       </div>
 
-      <!-- 3행: 형태 / 상태 -->
+      <!-- 3행: 형태 / 메모 -->
       <div class="filters-row">
         <div class="filter-group">
           <label for="filter-format">형태</label>
@@ -440,11 +456,11 @@
           </select>
         </div>
         <div class="filter-group">
-          <label for="filter-status">상태</label>
-          <select id="filter-status">
+          <label for="filter-memo">메모</label>
+          <select id="filter-memo">
             <option value="">전체</option>
-            <option value="reading">읽는 중</option>
-            <option value="finished">완독</option>
+            <option value="with">메모 있음</option>
+            <option value="without">메모 없음</option>
           </select>
         </div>
       </div>
@@ -561,7 +577,7 @@
     const filterAuthor = document.getElementById("filter-author");
     const filterGenre  = document.getElementById("filter-genre");
     const filterFormat = document.getElementById("filter-format");
-    const filterStatus = document.getElementById("filter-status");
+    const filterMemo   = document.getElementById("filter-memo");
     const filterResetBtn = document.getElementById("filter-reset-btn");
 
     const memoModal = document.getElementById("memo-modal");
@@ -694,10 +710,10 @@
         if (b.genre) genres.add(b.genre);
       });
 
-      const currentYear = filterYear.value;
-      const currentGenre = filterGenre.value;
+      const currentYear   = filterYear.value;
+      const currentGenre  = filterGenre.value;
       const currentFormat = filterFormat.value;
-      const currentStatus = filterStatus.value;
+      const currentMemo   = filterMemo.value;
 
       // 연도 select
       filterYear.innerHTML = '<option value="">전체</option>';
@@ -719,10 +735,9 @@
       });
       if (currentGenre && genres.has(currentGenre)) filterGenre.value = currentGenre;
 
-      // 형태 select 값 유지
+      // 나머지 값 유지
       filterFormat.value = currentFormat || "";
-      // 상태 select 값 유지
-      filterStatus.value = currentStatus || "";
+      filterMemo.value   = currentMemo || "";
     }
 
     function applyFilters(booksWithIndex) {
@@ -731,7 +746,7 @@
       const authorF = filterAuthor.value.trim().toLocaleLowerCase();
       const genreF  = filterGenre.value;
       const formatF = filterFormat.value;
-      const statusF = filterStatus.value;
+      const memoF   = filterMemo.value;
 
       return booksWithIndex.filter(b => {
         // 연도(완독 기준)
@@ -761,9 +776,10 @@
           if ((b.format || "") !== formatF) return false;
         }
 
-        // 상태 select
-        if (statusF === "reading" && isFinished(b)) return false;
-        if (statusF === "finished" && !isFinished(b)) return false;
+        // 메모 유무
+        const hasMemo = !!(b.memo && b.memo.trim());
+        if (memoF === "with" && !hasMemo) return false;
+        if (memoF === "without" && hasMemo) return false;
 
         return true;
       });
@@ -773,7 +789,7 @@
     filterYear.addEventListener("change", renderList);
     filterGenre.addEventListener("change", renderList);
     filterFormat.addEventListener("change", renderList);
-    filterStatus.addEventListener("change", renderList);
+    filterMemo.addEventListener("change", renderList);
     filterTitle.addEventListener("input", renderList);
     filterAuthor.addEventListener("input", renderList);
 
@@ -783,7 +799,7 @@
       filterAuthor.value = "";
       filterGenre.value = "";
       filterFormat.value = "";
-      filterStatus.value = "";
+      filterMemo.value = "";
       renderList();
     });
 
@@ -813,8 +829,17 @@
         emptyList.style.display = "none";
       }
 
-      // 정렬: 완독이면 finishDate, 아니면 startDate 기준 (최신 먼저)
+      // 정렬:
+      // 1순위: 읽는 중(미완독) 먼저
+      // 2순위: 날짜(완독일 or 시작일) 내림차순
       const sorted = filtered.sort((a, b) => {
+        const aFinished = isFinished(a);
+        const bFinished = isFinished(b);
+        if (aFinished !== bFinished) {
+          // false(읽는 중)가 true(완독)보다 앞으로
+          return aFinished ? 1 : -1;
+        }
+
         const aDate = a.finishDate || a.startDate || "";
         const bDate = b.finishDate || b.startDate || "";
 
@@ -881,7 +906,10 @@
         const tdMemo = document.createElement("td");
         tdMemo.className = "center";
         const memoBtn = document.createElement("button");
+        const hasMemo = !!(item.memo && item.memo.trim());
+        memoBtn.className = "memo-btn " + (hasMemo ? "has-memo" : "no-memo");
         memoBtn.textContent = "📝";
+        memoBtn.title = hasMemo ? "메모 있음" : "메모 없음";
         memoBtn.addEventListener("click", () => openMemoModal(item._index));
         tdMemo.appendChild(memoBtn);
         tr.appendChild(tdMemo);
