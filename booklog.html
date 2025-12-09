@@ -31,6 +31,7 @@
       margin-bottom: 8px;
       color: var(--primary-strong);
     }
+
     .tabs {
       display: flex;
       gap: 8px;
@@ -230,7 +231,7 @@
     td.format-cell { white-space: nowrap; }
     .nowrap { white-space: nowrap; }
 
-    /* memo button */
+    /* memo 버튼 */
     .memo-btn {
       border-radius: 999px;
       padding: 4px 8px;
@@ -261,7 +262,7 @@
       color: var(--primary-strong);
     }
 
-    /* memo modal */
+    /* memo modal (카드 리스트 + 편집 영역) */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -290,14 +291,55 @@
       color: var(--primary-strong);
     }
     .modal-header { margin-bottom: 8px; }
+
+    .memo-list {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #f9fbff;
+      padding: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+    }
+    .memo-card {
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #e0e6f5;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+    .memo-card.active {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+    .memo-card-preview {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .memo-card-empty {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 4px 0;
+    }
+
     .modal textarea {
       flex: 1;
       min-height: 160px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
     .modal .btn-row {
+      justify-content: space-between;
       margin-top: 10px;
-      justify-content: flex-end;
+    }
+    .modal-left-buttons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
     }
 
     /* toast */
@@ -532,10 +574,20 @@
         <h2>메모</h2>
         <div id="memo-book-info" class="small"></div>
       </div>
+
+      <div id="memo-list" class="memo-list"></div>
+
       <textarea id="memo-modal-text"></textarea>
+
       <div class="btn-row">
-        <button type="button" class="secondary" id="memo-cancel-btn">닫기</button>
-        <button type="button" class="primary" id="memo-save-btn">저장</button>
+        <div class="modal-left-buttons">
+          <button type="button" class="secondary" id="memo-new-btn">새 메모</button>
+          <button type="button" class="danger" id="memo-delete-btn" style="display:none;">삭제</button>
+        </div>
+        <div>
+          <button type="button" class="secondary" id="memo-cancel-btn">닫기</button>
+          <button type="button" class="primary" id="memo-save-btn">저장</button>
+        </div>
       </div>
     </div>
   </div>
@@ -582,10 +634,15 @@
 
     const memoModal = document.getElementById("memo-modal");
     const memoBookInfo = document.getElementById("memo-book-info");
+    const memoListDiv = document.getElementById("memo-list");
     const memoModalText = document.getElementById("memo-modal-text");
+    const memoNewBtn = document.getElementById("memo-new-btn");
+    const memoDeleteBtn = document.getElementById("memo-delete-btn");
     const memoCancelBtn = document.getElementById("memo-cancel-btn");
     const memoSaveBtn = document.getElementById("memo-save-btn");
-    let memoEditIndex = null;
+
+    let memoBookIndex = null;   // 어떤 책인지
+    let memoCardIndex = null;   // 그 책 안의 몇 번째 메모인지
 
     let toastTimeout;
     function showToast(msg) {
@@ -671,9 +728,19 @@
       let message = "";
 
       if (editIndex !== "") {
+        // 기존 메모 카드가 있으면 그대로 유지
+        const old = books[Number(editIndex)];
+        if (old && Array.isArray(old.memos)) {
+          book.memos = old.memos;
+          book.memo = old.memos.join("\n\n");
+        }
         books[Number(editIndex)] = book;
         message = "독서 기록이 수정되었습니다.";
       } else {
+        // 새로 추가할 때 입력 탭의 메모가 있으면 첫 카드로 넣어줌
+        if (memo.trim()) {
+          book.memos = [memo.trim()];
+        }
         books.push(book);
         message = "새 독서 기록이 추가되었습니다.";
       }
@@ -697,6 +764,20 @@
       const diffDays = Math.round(diffMs / 86400000) + 1;
       if (diffDays < 1) return null;
       return diffDays;
+    }
+
+    // 메모 배열 보장 + 기존 단일 memo 문자열을 카드 1개로 마이그레이션
+    function ensureBookMemos(book) {
+      if (!book.memos) {
+        book.memos = [];
+      }
+      if (!Array.isArray(book.memos)) {
+        book.memos = [];
+      }
+      if (book.memos.length === 0 && book.memo && book.memo.trim()) {
+        book.memos.push(book.memo.trim());
+      }
+      return book.memos;
     }
 
     function updateFilterOptions(books) {
@@ -735,7 +816,6 @@
       });
       if (currentGenre && genres.has(currentGenre)) filterGenre.value = currentGenre;
 
-      // 나머지 값 유지
       filterFormat.value = currentFormat || "";
       filterMemo.value   = currentMemo || "";
     }
@@ -754,30 +834,34 @@
           if (!b.finishDate || b.finishDate.slice(0,4) !== yearF) return false;
         }
 
-        // 제목 부분 검색
+        // 제목 검색
         if (titleF) {
           const t = (b.title || "").toLocaleLowerCase();
           if (!t.includes(titleF)) return false;
         }
 
-        // 작가 부분 검색
+        // 작가 검색
         if (authorF) {
           const a = (b.author || "").toLocaleLowerCase();
           if (!a.includes(authorF)) return false;
         }
 
-        // 분야 select
+        // 분야 필터
         if (genreF) {
           if ((b.genre || "") !== genreF) return false;
         }
 
-        // 형태 select
+        // 형태 필터
         if (formatF) {
           if ((b.format || "") !== formatF) return false;
         }
 
-        // 메모 유무
-        const hasMemo = !!(b.memo && b.memo.trim());
+        // 메모 유무 필터
+        const memos = Array.isArray(b.memos) ? b.memos : [];
+        const hasMemoArray = memos.some(m => m && m.trim());
+        const hasLegacy = b.memo && b.memo.trim();
+        const hasMemo = hasMemoArray || hasLegacy;
+
         if (memoF === "with" && !hasMemo) return false;
         if (memoF === "without" && hasMemo) return false;
 
@@ -836,8 +920,7 @@
         const aFinished = isFinished(a);
         const bFinished = isFinished(b);
         if (aFinished !== bFinished) {
-          // false(읽는 중)가 true(완독)보다 앞으로
-          return aFinished ? 1 : -1;
+          return aFinished ? 1 : -1; // 읽는 중(false)가 앞으로
         }
 
         const aDate = a.finishDate || a.startDate || "";
@@ -906,7 +989,12 @@
         const tdMemo = document.createElement("td");
         tdMemo.className = "center";
         const memoBtn = document.createElement("button");
-        const hasMemo = !!(item.memo && item.memo.trim());
+
+        const memos = Array.isArray(item.memos) ? item.memos : [];
+        const hasMemoArray = memos.some(m => m && m.trim());
+        const hasLegacy = item.memo && item.memo.trim();
+        const hasMemo = hasMemoArray || hasLegacy;
+
         memoBtn.className = "memo-btn " + (hasMemo ? "has-memo" : "no-memo");
         memoBtn.textContent = "📝";
         memoBtn.title = hasMemo ? "메모 있음" : "메모 없음";
@@ -921,36 +1009,143 @@
       listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
     }
 
-    function openMemoModal(index) {
+    function openMemoModal(bookIndex) {
       const books = loadBooks();
-      const book = books[index];
+      const book = books[bookIndex];
       if (!book) return;
 
-      memoEditIndex = index;
+      memoBookIndex = bookIndex;
+
+      const memos = ensureBookMemos(book);
+      // legacy memo 필드도 동기화
+      book.memo = memos.join("\n\n");
+      books[bookIndex] = book;
+      saveBooks(books);
+
       memoBookInfo.textContent = `${book.title}${book.author ? " · " + book.author : ""}`;
-      memoModalText.value = book.memo || "";
+
+      if (memos.length > 0) {
+        memoCardIndex = 0;
+        memoModalText.value = memos[0];
+        memoDeleteBtn.style.display = "inline-block";
+      } else {
+        memoCardIndex = null;
+        memoModalText.value = "";
+        memoDeleteBtn.style.display = "none";
+      }
+
+      renderMemoCards(memos);
       memoModal.classList.add("active");
       memoModalText.focus();
     }
 
+    function renderMemoCards(memos) {
+      memoListDiv.innerHTML = "";
+      if (!memos || memos.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "memo-card-empty";
+        empty.textContent = "아직 메모가 없습니다. 아래에 내용을 입력하고 저장해 보세요.";
+        memoListDiv.appendChild(empty);
+        return;
+      }
+
+      memos.forEach((text, idx) => {
+        const card = document.createElement("div");
+        card.className = "memo-card" + (idx === memoCardIndex ? " active" : "");
+        const preview = document.createElement("span");
+        preview.className = "memo-card-preview";
+        const oneLine = String(text || "").replace(/\s+/g, " ").trim();
+        preview.textContent = oneLine || "(내용 없음)";
+        card.appendChild(preview);
+
+        card.addEventListener("click", () => {
+          memoCardIndex = idx;
+          memoModalText.value = text;
+          memoDeleteBtn.style.display = "inline-block";
+          renderMemoCards(memos);
+        });
+
+        memoListDiv.appendChild(card);
+      });
+    }
+
     function closeMemoModal() {
       memoModal.classList.remove("active");
-      memoEditIndex = null;
+      memoBookIndex = null;
+      memoCardIndex = null;
       memoModalText.value = "";
       memoBookInfo.textContent = "";
+      memoListDiv.innerHTML = "";
+      memoDeleteBtn.style.display = "none";
     }
 
     memoCancelBtn.addEventListener("click", closeMemoModal);
 
-    memoSaveBtn.addEventListener("click", () => {
-      if (memoEditIndex == null) return;
+    memoNewBtn.addEventListener("click", () => {
+      if (memoBookIndex == null) return;
+      memoCardIndex = null;
+      memoModalText.value = "";
+      memoDeleteBtn.style.display = "none";
+
       const books = loadBooks();
-      const book = books[memoEditIndex];
+      const book = books[memoBookIndex];
       if (!book) return;
-      book.memo = memoModalText.value || "";
-      books[memoEditIndex] = book;
+      const memos = ensureBookMemos(book);
+      renderMemoCards(memos);
+      memoModalText.focus();
+    });
+
+    memoDeleteBtn.addEventListener("click", () => {
+      if (memoBookIndex == null || memoCardIndex == null) return;
+      if (!confirm("이 메모를 삭제할까요?")) return;
+
+      const books = loadBooks();
+      const book = books[memoBookIndex];
+      if (!book) return;
+      const memos = ensureBookMemos(book);
+
+      memos.splice(memoCardIndex, 1);
+      book.memos = memos;
+      book.memo = memos.join("\n\n");
+      books[memoBookIndex] = book;
       saveBooks(books);
-      closeMemoModal();
+
+      memoCardIndex = null;
+      memoModalText.value = "";
+      memoDeleteBtn.style.display = "none";
+      renderMemoCards(memos);
+      renderList();
+      showToast("메모가 삭제되었습니다.");
+    });
+
+    memoSaveBtn.addEventListener("click", () => {
+      if (memoBookIndex == null) return;
+      const text = memoModalText.value.trim();
+
+      const books = loadBooks();
+      const book = books[memoBookIndex];
+      if (!book) return;
+      const memos = ensureBookMemos(book);
+
+      if (!text) {
+        // 내용 없이 저장 -> 선택된 메모 삭제와 비슷하게 처리
+        if (memoCardIndex != null) {
+          memos.splice(memoCardIndex, 1);
+          memoCardIndex = null;
+        }
+      } else if (memoCardIndex == null) {
+        memos.push(text);
+        memoCardIndex = memos.length - 1;
+      } else {
+        memos[memoCardIndex] = text;
+      }
+
+      book.memos = memos;
+      book.memo = memos.join("\n\n");
+      books[memoBookIndex] = book;
+      saveBooks(books);
+
+      renderMemoCards(memos);
       renderList();
       showToast("메모가 저장되었습니다.");
     });
@@ -971,7 +1166,10 @@
       startInput.value = book.startDate || "";
       finishInput.value = book.finishDate || "";
       formatSelect.value = book.format || "";
-      memoInput.value = book.memo || "";
+
+      const memos = ensureBookMemos(book);
+      memoInput.value = (memos && memos.length) ? memos.join("\n\n") : (book.memo || "");
+
       editIndexInput.value = String(index);
       submitBtn.textContent = "수정 저장";
       resetBtn.style.display = "inline-block";
