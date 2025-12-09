@@ -360,7 +360,7 @@
         <div class="form-group">
           <label for="format">형태</label>
           <select id="format">
-            <option value="">선택</option>
+            <option value=""></option>
             <option value="ebook">e북</option>
             <option value="paper">종이책</option>
             <option value="audio">오디오북</option>
@@ -392,9 +392,6 @@
         <button type="submit" class="primary" id="submit-btn">추가</button>
       </div>
       <input type="hidden" id="edit-index" value="" />
-      <div class="small" style="margin-top:6px;">
-        ※ 완독하지 않은 책은 <strong>완독 날짜를 비워두면</strong> 자동으로 '읽는 중'으로 처리됩니다.
-      </div>
     </form>
   </div>
 
@@ -431,7 +428,7 @@
         </div>
       </div>
 
-      <!-- 3행: 형태 -->
+      <!-- 3행: 형태 / 상태 -->
       <div class="filters-row">
         <div class="filter-group">
           <label for="filter-format">형태</label>
@@ -440,6 +437,14 @@
             <option value="ebook">e북</option>
             <option value="paper">종이책</option>
             <option value="audio">오디오북</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-status">상태</label>
+          <select id="filter-status">
+            <option value="">전체</option>
+            <option value="reading">읽는 중</option>
+            <option value="finished">완독</option>
           </select>
         </div>
       </div>
@@ -556,6 +561,7 @@
     const filterAuthor = document.getElementById("filter-author");
     const filterGenre  = document.getElementById("filter-genre");
     const filterFormat = document.getElementById("filter-format");
+    const filterStatus = document.getElementById("filter-status");
     const filterResetBtn = document.getElementById("filter-reset-btn");
 
     const memoModal = document.getElementById("memo-modal");
@@ -691,6 +697,7 @@
       const currentYear = filterYear.value;
       const currentGenre = filterGenre.value;
       const currentFormat = filterFormat.value;
+      const currentStatus = filterStatus.value;
 
       // 연도 select
       filterYear.innerHTML = '<option value="">전체</option>';
@@ -714,6 +721,8 @@
 
       // 형태 select 값 유지
       filterFormat.value = currentFormat || "";
+      // 상태 select 값 유지
+      filterStatus.value = currentStatus || "";
     }
 
     function applyFilters(booksWithIndex) {
@@ -722,6 +731,7 @@
       const authorF = filterAuthor.value.trim().toLocaleLowerCase();
       const genreF  = filterGenre.value;
       const formatF = filterFormat.value;
+      const statusF = filterStatus.value;
 
       return booksWithIndex.filter(b => {
         // 연도(완독 기준)
@@ -750,6 +760,11 @@
         if (formatF) {
           if ((b.format || "") !== formatF) return false;
         }
+
+        // 상태 select
+        if (statusF === "reading" && isFinished(b)) return false;
+        if (statusF === "finished" && !isFinished(b)) return false;
+
         return true;
       });
     }
@@ -758,6 +773,7 @@
     filterYear.addEventListener("change", renderList);
     filterGenre.addEventListener("change", renderList);
     filterFormat.addEventListener("change", renderList);
+    filterStatus.addEventListener("change", renderList);
     filterTitle.addEventListener("input", renderList);
     filterAuthor.addEventListener("input", renderList);
 
@@ -767,6 +783,7 @@
       filterAuthor.value = "";
       filterGenre.value = "";
       filterFormat.value = "";
+      filterStatus.value = "";
       renderList();
     });
 
@@ -850,8 +867,8 @@
         } else {
           period = "<span class='small'>날짜 없음</span>";
         }
-        const statusText = finished ? "완독" : "읽는 중";
-        tdDates.innerHTML = period + `<div class="small">${statusText}</div>`;
+        const statusText = finished ? "" : "읽는 중";
+        tdDates.innerHTML = period + (statusText ? `<div class="small">${statusText}</div>` : "");
         tr.appendChild(tdDates);
 
         // 형태
