@@ -25,7 +25,6 @@
       background: var(--bg);
       color: var(--text-main);
     }
-    /* 메모 전체 화면이 뜰 때 배경 스크롤 막기 */
     body.modal-open {
       overflow: hidden;
       touch-action: none;
@@ -146,7 +145,7 @@
     }
     .danger:active { transform: scale(0.98); }
 
-    /* 필터 영역 */
+    /* 필터 */
     .filters {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -268,11 +267,11 @@
       color: var(--primary-strong);
     }
 
-    /* ===== 메모 전체 화면 (리스트 / 편집) ===== */
+    /* ===== 메모 전체 화면 (리스트 / 편집) - 블루 톤 ===== */
     .memo-screen {
       position: fixed;
       inset: 0;
-      background: #fffdf7;
+      background: var(--bg);
       display: none;
       flex-direction: column;
       z-index: 1200;
@@ -284,18 +283,21 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px;
-      border-bottom: 1px solid #ede4d5;
-      background: #f7f0e4;
+      border-bottom: 1px solid var(--border);
+      background: var(--primary-soft);
+      box-shadow: 0 1px 3px rgba(15,23,42,0.06);
     }
     .memo-header-title {
       font-weight: 600;
       font-size: 1rem;
+      color: var(--primary-strong);
     }
     .memo-header-btn {
       border: none;
       background: transparent;
       font-size: 1.1rem;
       padding: 4px 6px;
+      color: var(--text-muted);
     }
     .memo-header-btn.primary-text {
       color: var(--primary-strong);
@@ -307,7 +309,8 @@
       padding: 6px 14px 4px;
       font-size: 0.85rem;
       color: var(--text-muted);
-      border-bottom: 1px solid #f0e4d3;
+      border-bottom: 1px solid var(--border);
+      background: #ffffff;
     }
 
     .memo-body {
@@ -317,32 +320,47 @@
     }
     .memo-footer {
       padding: 8px 12px 12px;
-      border-top: 1px solid #f0e4d3;
-      background: #fffaf0;
+      border-top: 1px solid var(--border);
+      background: #f0f4ff;
       display: flex;
       justify-content: flex-end;
       gap: 8px;
     }
 
-    /* 메모 카드 (리스트 화면) */
+    /* 메모 카드 - 메모지 느낌 */
     .memo-card-full {
-      padding: 10px 10px;
+      position: relative;
+      padding: 14px 10px 10px;
       border-radius: 12px;
       background: #ffffff;
-      border: 1px solid #e5d9c6;
+      border: 1px dashed #c5d6ff;
       margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+      box-shadow: 0 2px 5px rgba(79,141,245,0.08);
       cursor: pointer;
     }
-    .memo-card-full:hover {
-      background: #fff7ec;
+    .memo-card-full::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 6px;
+      border-radius: 12px 12px 0 0;
+      background: linear-gradient(to right, #9bb7ff, #4f8df5);
+      opacity: 0.85;
     }
     .memo-card-full p {
       margin: 0;
       white-space: pre-line;
       max-height: 8em; /* 너무 길면 뒤는 잘림 */
       overflow: hidden;
+      color: #111827;
+      font-size: 0.9rem;
     }
+    .memo-card-full:hover {
+      background: #f7f9ff;
+    }
+
     .memo-empty {
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -350,16 +368,16 @@
       margin-top: 12px;
     }
 
-    /* 메모 편집 화면 */
+    /* 메모 편집 텍스트 */
     #memo-edit-text {
       width: 100%;
       border-radius: 12px;
-      border: 1px solid #e0d2bd;
+      border: 1px solid var(--border);
       padding: 8px 10px;
       font-size: 0.9rem;
       min-height: 260px;
       resize: none;
-      background: #fffcf6;
+      background: #f7f9ff;
     }
     #memo-edit-text:focus {
       outline: none;
@@ -662,7 +680,6 @@
     const filterMemo   = document.getElementById("filter-memo");
     const filterResetBtn = document.getElementById("filter-reset-btn");
 
-    // 메모 전체 화면 관련 요소들
     const memoScreen = document.getElementById("memo-screen");
     const memoBookInfo = document.getElementById("memo-book-info");
     const memoCloseBtn = document.getElementById("memo-close-btn");
@@ -677,8 +694,8 @@
     const memoEditText = document.getElementById("memo-edit-text");
     const memoEditBookInfo = document.getElementById("memo-edit-book-info");
 
-    let memoBookIndex = null;   // 현재 메모를 보고 있는 책 index
-    let memoCardIndex = null;   // 그 책 안에서 몇 번째 메모인지
+    let memoBookIndex = null;
+    let memoCardIndex = null;
 
     let toastTimeout;
     function showToast(msg) {
@@ -691,7 +708,6 @@
       }, 2300);
     }
 
-    /* 탭 전환 */
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -712,8 +728,7 @@
       try {
         const arr = JSON.parse(raw);
         return Array.isArray(arr) ? arr : [];
-      } catch (e) {
-        console.error(e);
+      } catch {
         return [];
       }
     }
@@ -785,7 +800,7 @@
     });
 
     function isFinished(book) {
-      return !!(book.finishDate);
+      return !!book.finishDate;
     }
 
     function calcReadingDays(startDate, finishDate) {
@@ -795,18 +810,12 @@
       if (isNaN(s.getTime()) || isNaN(f.getTime())) return null;
       const diffMs = f.getTime() - s.getTime();
       const diffDays = Math.round(diffMs / 86400000) + 1;
-      if (diffDays < 1) return null;
-      return diffDays;
+      return diffDays < 1 ? null : diffDays;
     }
 
-    // 책 객체에 memos 배열을 보장 + 기존 memo 문자열을 1개의 카드로 이관
     function ensureBookMemos(book) {
-      if (!book.memos) {
-        book.memos = [];
-      }
-      if (!Array.isArray(book.memos)) {
-        book.memos = [];
-      }
+      if (!book.memos) book.memos = [];
+      if (!Array.isArray(book.memos)) book.memos = [];
       if (book.memos.length === 0 && book.memo && book.memo.trim()) {
         book.memos.push(book.memo.trim());
       }
@@ -863,24 +872,16 @@
         if (yearF) {
           if (!b.finishDate || b.finishDate.slice(0,4) !== yearF) return false;
         }
-
         if (titleF) {
           const t = (b.title || "").toLocaleLowerCase();
           if (!t.includes(titleF)) return false;
         }
-
         if (authorF) {
           const a = (b.author || "").toLocaleLowerCase();
           if (!a.includes(authorF)) return false;
         }
-
-        if (genreF) {
-          if ((b.genre || "") !== genreF) return false;
-        }
-
-        if (formatF) {
-          if ((b.format || "") !== formatF) return false;
-        }
+        if (genreF && (b.genre || "") !== genreF) return false;
+        if (formatF && (b.format || "") !== formatF) return false;
 
         const memos = Array.isArray(b.memos) ? b.memos : [];
         const hasMemoArray = memos.some(m => m && m.trim());
@@ -913,7 +914,6 @@
 
     function renderList() {
       const books = loadBooks();
-
       updateFilterOptions(books);
 
       if (books.length === 0) {
@@ -940,17 +940,13 @@
       const sorted = filtered.sort((a, b) => {
         const aFinished = isFinished(a);
         const bFinished = isFinished(b);
-        if (aFinished !== bFinished) {
-          return aFinished ? 1 : -1;
-        }
+        if (aFinished !== bFinished) return aFinished ? 1 : -1;
 
         const aDate = a.finishDate || a.startDate || "";
         const bDate = b.finishDate || b.startDate || "";
-
         if (!aDate && !bDate) return 0;
         if (!aDate) return 1;
         if (!bDate) return -1;
-
         return bDate.localeCompare(aDate);
       });
 
@@ -965,17 +961,11 @@
         tdTitle.style.cursor = "pointer";
         tdTitle.title = "누르면 수정";
         let html = `<div>${escapeHtml(item.title)}</div>`;
-        if (item.author) {
-          html += `<div class="small">${escapeHtml(item.author)}</div>`;
-        }
-        if (item.genre) {
-          html += `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>`;
-        }
+        if (item.author) html += `<div class="small">${escapeHtml(item.author)}</div>`;
+        if (item.genre) html += `<div class="small"><span class="tag">${escapeHtml(item.genre)}</span></div>`;
         tdTitle.innerHTML = html;
         tdTitle.addEventListener("click", () => {
-          if (confirm("이 책 정보를 수정하시겠습니까?")) {
-            startEdit(item._index);
-          }
+          if (confirm("이 책 정보를 수정하시겠습니까?")) startEdit(item._index);
         });
         tr.appendChild(tdTitle);
 
@@ -983,11 +973,8 @@
         let period = "";
         if (item.startDate && item.finishDate) {
           const days = calcReadingDays(item.startDate, item.finishDate);
-          if (days) {
-            period = `<span class="nowrap">${item.finishDate}(${days}일)</span>`;
-          } else {
-            period = `<span class="nowrap">${item.finishDate}</span>`;
-          }
+          if (days) period = `<span class="nowrap">${item.finishDate}(${days}일)</span>`;
+          else period = `<span class="nowrap">${item.finishDate}</span>`;
         } else if (item.finishDate || item.startDate) {
           const d = item.finishDate || item.startDate;
           period = `<span class="nowrap">${d}</span>`;
@@ -1023,10 +1010,11 @@
       });
 
       const finishedCount = books.filter(b => b.finishDate).length;
-      listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
+      listSummary.textContent =
+        `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
     }
 
-    /* ===== 메모 리스트/편집 화면 로직 ===== */
+    /* ===== 메모 화면 ===== */
 
     function openMemoListScreen(bookIndex) {
       const books = loadBooks();
@@ -1062,11 +1050,7 @@
         const p = document.createElement("p");
         p.textContent = text || "";
         card.appendChild(p);
-
-        card.addEventListener("click", () => {
-          openMemoEditScreen(idx);
-        });
-
+        card.addEventListener("click", () => openMemoEditScreen(idx));
         memoListContainer.appendChild(card);
       });
     }
@@ -1081,10 +1065,7 @@
     }
 
     memoCloseBtn.addEventListener("click", closeAllMemoScreens);
-
-    memoNewBtn.addEventListener("click", () => {
-      openMemoEditScreen(null);
-    });
+    memoNewBtn.addEventListener("click", () => openMemoEditScreen(null));
 
     function openMemoEditScreen(index) {
       if (memoBookIndex == null) return;
@@ -1167,7 +1148,6 @@
           memos.splice(memoCardIndex, 1);
           memoCardIndex = null;
         } else {
-          // 새 메모인데 내용이 없으면 그냥 돌아가기
           showToast("내용이 없습니다.");
           memoEditText.focus();
           return;
@@ -1191,7 +1171,7 @@
       renderList();
     });
 
-    /* ===== 수정 모드 진입 / 삭제 ===== */
+    /* ===== 수정 모드 / 삭제 ===== */
 
     function startEdit(index) {
       const books = loadBooks();
@@ -1329,7 +1309,6 @@
       }
     }
 
-    // 초기 렌더
     renderList();
   </script>
 </body>
