@@ -25,6 +25,12 @@
       background: var(--bg);
       color: var(--text-main);
     }
+    /* 모달 열려 있을 때 배경 스크롤 막기 */
+    body.modal-open {
+      overflow: hidden;
+      touch-action: none;
+    }
+
     h1 {
       text-align: center;
       font-size: 1.7rem;
@@ -279,7 +285,7 @@
       padding: 16px;
       max-width: 600px;
       width: 100%;
-      max-height: 80vh;
+      max-height: 88vh; /* 살짝 키움 */
       display: flex;
       flex-direction: column;
       box-shadow: 0 20px 40px rgba(15,23,42,0.32);
@@ -297,7 +303,7 @@
       border: 1px solid var(--border);
       background: #f9fbff;
       padding: 6px;
-      max-height: 180px;
+      max-height: 220px; /* 카드 영역도 살짝 키움 */
       overflow-y: auto;
       margin-bottom: 8px;
     }
@@ -329,7 +335,7 @@
 
     .modal textarea {
       flex: 1;
-      min-height: 160px;
+      min-height: 200px; /* 입력창 높이 증가 */
       margin-top: 4px;
     }
     .modal .btn-row {
@@ -641,8 +647,8 @@
     const memoCancelBtn = document.getElementById("memo-cancel-btn");
     const memoSaveBtn = document.getElementById("memo-save-btn");
 
-    let memoBookIndex = null;   // 어떤 책인지
-    let memoCardIndex = null;   // 그 책 안의 몇 번째 메모인지
+    let memoBookIndex = null;
+    let memoCardIndex = null;
 
     let toastTimeout;
     function showToast(msg) {
@@ -728,7 +734,6 @@
       let message = "";
 
       if (editIndex !== "") {
-        // 기존 메모 카드가 있으면 그대로 유지
         const old = books[Number(editIndex)];
         if (old && Array.isArray(old.memos)) {
           book.memos = old.memos;
@@ -737,7 +742,6 @@
         books[Number(editIndex)] = book;
         message = "독서 기록이 수정되었습니다.";
       } else {
-        // 새로 추가할 때 입력 탭의 메모가 있으면 첫 카드로 넣어줌
         if (memo.trim()) {
           book.memos = [memo.trim()];
         }
@@ -754,7 +758,6 @@
       return !!(book.finishDate);
     }
 
-    // 읽는데 걸린 일수 계산 (포함해서 +1일)
     function calcReadingDays(startDate, finishDate) {
       if (!startDate || !finishDate) return null;
       const s = new Date(startDate);
@@ -766,7 +769,6 @@
       return diffDays;
     }
 
-    // 메모 배열 보장 + 기존 단일 memo 문자열을 카드 1개로 마이그레이션
     function ensureBookMemos(book) {
       if (!book.memos) {
         book.memos = [];
@@ -796,7 +798,6 @@
       const currentFormat = filterFormat.value;
       const currentMemo   = filterMemo.value;
 
-      // 연도 select
       filterYear.innerHTML = '<option value="">전체</option>';
       Array.from(years).sort((a,b)=>b.localeCompare(a)).forEach(y => {
         const opt = document.createElement("option");
@@ -806,7 +807,6 @@
       });
       if (currentYear && years.has(currentYear)) filterYear.value = currentYear;
 
-      // 분야 select
       filterGenre.innerHTML = '<option value="">전체</option>';
       Array.from(genres).sort((a,b)=>a.localeCompare(b)).forEach(g => {
         const opt = document.createElement("option");
@@ -829,34 +829,28 @@
       const memoF   = filterMemo.value;
 
       return booksWithIndex.filter(b => {
-        // 연도(완독 기준)
         if (yearF) {
           if (!b.finishDate || b.finishDate.slice(0,4) !== yearF) return false;
         }
 
-        // 제목 검색
         if (titleF) {
           const t = (b.title || "").toLocaleLowerCase();
           if (!t.includes(titleF)) return false;
         }
 
-        // 작가 검색
         if (authorF) {
           const a = (b.author || "").toLocaleLowerCase();
           if (!a.includes(authorF)) return false;
         }
 
-        // 분야 필터
         if (genreF) {
           if ((b.genre || "") !== genreF) return false;
         }
 
-        // 형태 필터
         if (formatF) {
           if ((b.format || "") !== formatF) return false;
         }
 
-        // 메모 유무 필터
         const memos = Array.isArray(b.memos) ? b.memos : [];
         const hasMemoArray = memos.some(m => m && m.trim());
         const hasLegacy = b.memo && b.memo.trim();
@@ -869,7 +863,6 @@
       });
     }
 
-    // 필터 이벤트
     filterYear.addEventListener("change", renderList);
     filterGenre.addEventListener("change", renderList);
     filterFormat.addEventListener("change", renderList);
@@ -913,14 +906,11 @@
         emptyList.style.display = "none";
       }
 
-      // 정렬:
-      // 1순위: 읽는 중(미완독) 먼저
-      // 2순위: 날짜(완독일 or 시작일) 내림차순
       const sorted = filtered.sort((a, b) => {
         const aFinished = isFinished(a);
         const bFinished = isFinished(b);
         if (aFinished !== bFinished) {
-          return aFinished ? 1 : -1; // 읽는 중(false)가 앞으로
+          return aFinished ? 1 : -1;
         }
 
         const aDate = a.finishDate || a.startDate || "";
@@ -940,7 +930,6 @@
         const tr = document.createElement("tr");
         const finished = isFinished(item);
 
-        // 도서 열
         const tdTitle = document.createElement("td");
         tdTitle.style.cursor = "pointer";
         tdTitle.title = "누르면 수정";
@@ -959,7 +948,6 @@
         });
         tr.appendChild(tdTitle);
 
-        // 읽은 날짜 열
         const tdDates = document.createElement("td");
         let period = "";
         if (item.startDate && item.finishDate) {
@@ -979,13 +967,11 @@
         tdDates.innerHTML = period + (statusText ? `<div class="small">${statusText}</div>` : "");
         tr.appendChild(tdDates);
 
-        // 형태
         const tdFormat = document.createElement("td");
         tdFormat.className = "center small format-cell";
         tdFormat.textContent = formatToText(item.format);
         tr.appendChild(tdFormat);
 
-        // 메모 버튼
         const tdMemo = document.createElement("td");
         tdMemo.className = "center";
         const memoBtn = document.createElement("button");
@@ -1017,7 +1003,6 @@
       memoBookIndex = bookIndex;
 
       const memos = ensureBookMemos(book);
-      // legacy memo 필드도 동기화
       book.memo = memos.join("\n\n");
       books[bookIndex] = book;
       saveBooks(books);
@@ -1036,6 +1021,7 @@
 
       renderMemoCards(memos);
       memoModal.classList.add("active");
+      document.body.classList.add("modal-open");   // 배경 스크롤 막기
       memoModalText.focus();
     }
 
@@ -1071,6 +1057,7 @@
 
     function closeMemoModal() {
       memoModal.classList.remove("active");
+      document.body.classList.remove("modal-open"); // 배경 스크롤 다시 허용
       memoBookIndex = null;
       memoCardIndex = null;
       memoModalText.value = "";
@@ -1128,7 +1115,6 @@
       const memos = ensureBookMemos(book);
 
       if (!text) {
-        // 내용 없이 저장 -> 선택된 메모 삭제와 비슷하게 처리
         if (memoCardIndex != null) {
           memos.splice(memoCardIndex, 1);
           memoCardIndex = null;
@@ -1286,7 +1272,6 @@
       }
     }
 
-    // 초기 렌더
     renderList();
   </script>
 </body>
