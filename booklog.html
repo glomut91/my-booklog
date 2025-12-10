@@ -341,7 +341,7 @@
       border-radius: 12px;
       background: #ffffff;
       border: 1px solid #d3defa;
-      margin: 10px 6px 20px;
+      margin: 10px 12px 22px;
       box-shadow: 0 2px 4px rgba(79,141,245,0.06);
       cursor: pointer;
     }
@@ -367,6 +367,10 @@
     }
     .memo-card-full:hover {
       background: #f7f9ff;
+    }
+    .memo-card-full.drag-source {
+      box-shadow: 0 0 0 2px rgba(79,141,245,0.35);
+      border-color: #4f8df5;
     }
 
     .memo-empty {
@@ -709,6 +713,10 @@
 
     let memoBookIndex = null;
     let memoCardIndex = null;
+
+    // 드래그용 상태
+    let memoDragSourceIndex = null;
+    let memoDragJustHappened = false;
 
     let toastTimeout;
     function showToast(msg) {
@@ -1056,6 +1064,9 @@
 
     function renderMemoListFull(memos) {
       memoListContainer.innerHTML = "";
+      memoDragSourceIndex = null;
+      memoDragJustHappened = false;
+
       if (!memos || memos.length === 0) {
         memoEmptyText.style.display = "block";
         return;
@@ -1065,13 +1076,67 @@
       memos.forEach((text, idx) => {
         const card = document.createElement("div");
         card.className = "memo-card-full";
+        card.dataset.index = String(idx);
+
         const p = document.createElement("p");
         p.textContent = text || "";
         card.appendChild(p);
-        card.addEventListener("click", () => openMemoEditScreen(idx));
+
+        // 클릭 → 편집 (드래그 직후에는 클릭 무시)
+        card.addEventListener("click", () => {
+          if (memoDragJustHappened) {
+            memoDragJustHappened = false;
+            return;
+          }
+          openMemoEditScreen(idx);
+        });
+
+        // 드래그 시작
+        card.addEventListener("pointerdown", () => {
+          memoDragSourceIndex = idx;
+          memoDragJustHappened = false;
+          document.querySelectorAll(".memo-card-full").forEach(c => c.classList.remove("drag-source"));
+          card.classList.add("drag-source");
+        });
+
         memoListContainer.appendChild(card);
       });
     }
+
+    // 드래그 종료(손을 뗐을 때) – 카드 위치 변경
+    memoListContainer.addEventListener("pointerup", (e) => {
+      if (memoDragSourceIndex == null || memoBookIndex == null) return;
+
+      const targetCard = e.target.closest(".memo-card-full");
+      const sourceIndex = memoDragSourceIndex;
+      memoDragSourceIndex = null;
+      document.querySelectorAll(".memo-card-full").forEach(c => c.classList.remove("drag-source"));
+
+      if (!targetCard) return;
+
+      const targetIndex = Number(targetCard.dataset.index);
+      if (!Number.isInteger(targetIndex) || targetIndex === sourceIndex) return;
+
+      const books = loadBooks();
+      const book = books[memoBookIndex];
+      if (!book) return;
+      const memos = ensureBookMemos(book);
+
+      if (sourceIndex < 0 || sourceIndex >= memos.length ||
+          targetIndex < 0 || targetIndex >= memos.length) return;
+
+      const [moved] = memos.splice(sourceIndex, 1);
+      memos.splice(targetIndex, 0, moved);
+
+      book.memos = memos;
+      book.memo = memos.join("\n\n");
+      books[memoBookIndex] = book;
+      saveBooks(books);
+
+      memoDragJustHappened = true;
+      renderMemoListFull(memos);
+      showToast("메모 순서가 변경되었습니다.");
+    });
 
     function closeAllMemoScreens() {
       memoScreen.classList.remove("active");
@@ -1080,6 +1145,8 @@
       memoBookIndex = null;
       memoCardIndex = null;
       memoEditText.value = "";
+      memoDragSourceIndex = null;
+      memoDragJustHappened = false;
     }
 
     memoCloseBtn.addEventListener("click", closeAllMemoScreens);
