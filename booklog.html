@@ -67,7 +67,7 @@
     .section { display: none; }
     .section.active { display: block; }
 
-    /* form */
+    /* 폼 */
     form {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -306,7 +306,12 @@
     .memo-header-btn.primary-text {
       color: var(--primary-strong);
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 1.05rem;
+    }
+    .memo-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .memo-book-info {
@@ -320,7 +325,7 @@
     .memo-body {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 12px 14px;
+      padding: 10px 8px 16px;
     }
     .memo-footer {
       padding: 8px 12px 12px;
@@ -331,15 +336,15 @@
       gap: 8px;
     }
 
-    /* 메모 카드 - 메모지 느낌 */
+    /* 메모 카드 - 메모지 느낌 + 여백 */
     .memo-card-full {
       position: relative;
-      padding: 16px 12px 12px;
+      padding: 14px 12px 12px;
       border-radius: 12px;
       background: #ffffff;
-      border: 1px dashed #c5d6ff;
-      margin-bottom: 14px; /* 카드 간 여유 */
-      box-shadow: 0 2px 5px rgba(79,141,245,0.08);
+      border: 1px solid #d3defa;
+      margin: 10px 4px 18px;
+      box-shadow: 0 2px 4px rgba(79,141,245,0.06);
       cursor: pointer;
     }
     .memo-card-full::before {
@@ -354,13 +359,13 @@
       opacity: 0.85;
     }
     .memo-card-full p {
-      margin: 0;
+      margin: 4px 0 0;
       white-space: pre-line;
-      max-height: 9.6em; /* 줄간격 늘린 만큼 조금 키움 */
+      max-height: 9.6em;
       overflow: hidden;
       color: #111827;
-      font-size: 0.96rem;   /* 살짝 크게 */
-      line-height: 1.6;      /* 줄간격 넓게 */
+      font-size: 0.96rem;
+      line-height: 1.6;
     }
     .memo-card-full:hover {
       background: #f7f9ff;
@@ -373,23 +378,26 @@
       margin-top: 12px;
     }
 
-    /* 메모 편집 텍스트 */
+    /* 메모 편집 텍스트 (전체 화면 느낌) */
+    .memo-body-edit {
+      padding: 10px 0 16px;
+    }
     #memo-edit-text {
       width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      padding: 10px 11px;
-      font-size: 0.96rem;   /* 리스트랑 맞춤 */
-      line-height: 1.6;
-      min-height: 260px;
+      border: none;
+      border-radius: 0;
+      padding: 12px 16px;
+      font-size: 0.98rem;
+      line-height: 1.7;
+      min-height: calc(100vh - 120px); /* 헤더+책정보 높이 빼고 나머지 전부 */
       resize: none;
-      background: #f7f9ff;
-      box-sizing: border-box; /* 가로 스크롤 방지 */
+      background: #fdfdff;
+      box-sizing: border-box;
     }
     #memo-edit-text:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(79,141,245,0.15);
+      border: none;
+      box-shadow: none;
       background: #ffffff;
     }
 
@@ -619,7 +627,7 @@
     <div class="memo-header">
       <button type="button" class="memo-header-btn" id="memo-close-btn">✕</button>
       <div class="memo-header-title">메모</div>
-      <div style="width:32px;"></div>
+      <div style="width:40px;"></div>
     </div>
     <div class="memo-book-info" id="memo-book-info"></div>
     <div class="memo-body" id="memo-list-body">
@@ -636,14 +644,14 @@
     <div class="memo-header">
       <button type="button" class="memo-header-btn" id="memo-edit-back-btn">←</button>
       <div class="memo-header-title">메모 편집</div>
-      <button type="button" class="memo-header-btn primary-text" id="memo-edit-save-btn">저장</button>
+      <div class="memo-header-actions">
+        <button type="button" class="memo-header-btn" id="memo-edit-delete-btn">🗑️</button>
+        <button type="button" class="memo-header-btn primary-text" id="memo-edit-save-btn">✔️</button>
+      </div>
     </div>
     <div class="memo-book-info" id="memo-edit-book-info"></div>
-    <div class="memo-body">
+    <div class="memo-body memo-body-edit">
       <textarea id="memo-edit-text" placeholder="메모를 입력하세요."></textarea>
-    </div>
-    <div class="memo-footer">
-      <button type="button" class="danger" id="memo-edit-delete-btn" style="display:none;">메모 삭제</button>
     </div>
   </div>
 
@@ -715,6 +723,7 @@
       }, 2300);
     }
 
+    /* 탭 전환 */
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -729,6 +738,7 @@
       });
     });
 
+    /* 로컬스토리지 */
     function loadBooks() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
@@ -764,6 +774,7 @@
       deleteBook(idx);
     });
 
+    /* 입력/수정 저장 */
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const title = titleInput.value.trim();
@@ -829,6 +840,7 @@
       return book.memos;
     }
 
+    /* 필터 옵션 채우기 */
     function updateFilterOptions(books) {
       const years = new Set();
       const genres = new Set();
@@ -919,6 +931,7 @@
       renderList();
     });
 
+    /* 목록 렌더링 */
     function renderList() {
       const books = loadBooks();
       updateFilterOptions(books);
@@ -1021,7 +1034,7 @@
         `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
     }
 
-    /* ===== 메모 화면 ===== */
+    /* ===== 메모 리스트/편집 화면 ===== */
 
     function openMemoListScreen(bookIndex) {
       const books = loadBooks();
@@ -1232,6 +1245,7 @@
         .replace(/>/g, "&gt;");
     }
 
+    /* ===== 통계 ===== */
     function renderStats() {
       const books = loadBooks();
       const finished = books.filter(b => b.finishDate);
@@ -1316,6 +1330,46 @@
       }
     }
 
+    /* ===== 뒤로가기 두 번 누르면 종료 ===== */
+    let backPressTimer = null;
+
+    window.addEventListener("load", () => {
+      if (window.history && window.history.replaceState) {
+        history.replaceState({app:"main"}, "", location.href);
+        history.pushState({app:"main-back"}, "", location.href);
+      }
+      renderList();
+    });
+
+    window.addEventListener("popstate", (event) => {
+      // 1순위: 메모 편집 화면 -> 메모 리스트로
+      if (memoEditScreen.classList.contains("active")) {
+        memoEditBackBtn.click();
+        history.pushState({app:"memo"}, "", location.href);
+        return;
+      }
+      // 2순위: 메모 리스트 화면 -> 메모 닫기
+      if (memoScreen.classList.contains("active")) {
+        closeAllMemoScreens();
+        history.pushState({app:"main"}, "", location.href);
+        return;
+      }
+
+      // 기본 화면에서 뒤로가기 두 번 처리
+      if (backPressTimer == null) {
+        showToast("앱을 종료하려면 한 번 더 뒤로가기를 눌러주세요.");
+        backPressTimer = setTimeout(() => {
+          backPressTimer = null;
+        }, 2000);
+        history.pushState({app:"main"}, "", location.href);
+      } else {
+        clearTimeout(backPressTimer);
+        backPressTimer = null;
+        // 두 번째 뒤로가기는 별도 처리 없이 브라우저 기본 동작(앱 종료)에 맡김
+      }
+    });
+
+    // 초기 렌더
     renderList();
   </script>
 </body>
