@@ -25,7 +25,7 @@
       background: var(--bg);
       color: var(--text-main);
     }
-    /* 모달 열려 있을 때 배경 스크롤 막기 */
+    /* 메모 전체 화면이 뜰 때 배경 스크롤 막기 */
     body.modal-open {
       overflow: hidden;
       touch-action: none;
@@ -146,7 +146,7 @@
     }
     .danger:active { transform: scale(0.98); }
 
-    /* filters */
+    /* 필터 영역 */
     .filters {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -184,7 +184,7 @@
       margin-top: 4px;
     }
 
-    /* table */
+    /* 테이블 */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -237,7 +237,7 @@
     td.format-cell { white-space: nowrap; }
     .nowrap { white-space: nowrap; }
 
-    /* memo 버튼 */
+    /* 메모 버튼 */
     .memo-btn {
       border-radius: 999px;
       padding: 4px 8px;
@@ -253,7 +253,7 @@
       opacity: 0.45;
     }
 
-    /* stats */
+    /* 통계 */
     .stats-block {
       margin-bottom: 20px;
       background: #ffffff;
@@ -268,84 +268,104 @@
       color: var(--primary-strong);
     }
 
-    /* memo modal (카드 리스트 + 편집 영역) */
-    .modal-overlay {
+    /* ===== 메모 전체 화면 (리스트 / 편집) ===== */
+    .memo-screen {
       position: fixed;
       inset: 0;
-      background: rgba(15,23,42,0.35);
+      background: #fffdf7;
       display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 16px;
-      max-width: 600px;
-      width: 100%;
-      max-height: 88vh; /* 살짝 키움 */
-      display: flex;
       flex-direction: column;
-      box-shadow: 0 20px 40px rgba(15,23,42,0.32);
-      border: 1px solid var(--border);
+      z-index: 1200;
     }
-    .modal h2 {
-      margin: 0 0 6px;
-      font-size: 1.1rem;
-      color: var(--primary-strong);
-    }
-    .modal-header { margin-bottom: 8px; }
+    .memo-screen.active { display: flex; }
 
-    .memo-list {
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #f9fbff;
-      padding: 6px;
-      max-height: 220px; /* 카드 영역도 살짝 키움 */
-      overflow-y: auto;
-      margin-bottom: 8px;
+    .memo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #ede4d5;
+      background: #f7f0e4;
     }
-    .memo-card {
-      padding: 6px 8px;
-      border-radius: 8px;
+    .memo-header-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .memo-header-btn {
+      border: none;
+      background: transparent;
+      font-size: 1.1rem;
+      padding: 4px 6px;
+    }
+    .memo-header-btn.primary-text {
+      color: var(--primary-strong);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .memo-book-info {
+      padding: 6px 14px 4px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid #f0e4d3;
+    }
+
+    .memo-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px 14px;
+    }
+    .memo-footer {
+      padding: 8px 12px 12px;
+      border-top: 1px solid #f0e4d3;
+      background: #fffaf0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* 메모 카드 (리스트 화면) */
+    .memo-card-full {
+      padding: 10px 10px;
+      border-radius: 12px;
       background: #ffffff;
-      border: 1px solid #e0e6f5;
-      font-size: 0.82rem;
-      margin-bottom: 4px;
+      border: 1px solid #e5d9c6;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.08);
       cursor: pointer;
     }
-    .memo-card.active {
-      border-color: var(--primary);
-      background: var(--primary-soft);
+    .memo-card-full:hover {
+      background: #fff7ec;
     }
-    .memo-card-preview {
-      display: block;
-      white-space: nowrap;
+    .memo-card-full p {
+      margin: 0;
+      white-space: pre-line;
+      max-height: 8em; /* 너무 길면 뒤는 잘림 */
       overflow: hidden;
-      text-overflow: ellipsis;
     }
-    .memo-card-empty {
-      font-size: 0.82rem;
+    .memo-empty {
+      font-size: 0.85rem;
       color: var(--text-muted);
       text-align: center;
-      padding: 4px 0;
+      margin-top: 12px;
     }
 
-    .modal textarea {
-      flex: 1;
-      min-height: 200px; /* 입력창 높이 증가 */
-      margin-top: 4px;
+    /* 메모 편집 화면 */
+    #memo-edit-text {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e0d2bd;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      min-height: 260px;
+      resize: none;
+      background: #fffcf6;
     }
-    .modal .btn-row {
-      justify-content: space-between;
-      margin-top: 10px;
-    }
-    .modal-left-buttons {
-      display: flex;
-      gap: 6px;
-      align-items: center;
+    #memo-edit-text:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(79,141,245,0.15);
+      background: #ffffff;
     }
 
     /* toast */
@@ -385,10 +405,6 @@
         font-size: 0.8rem;
       }
       h1 { font-size: 1.4rem; }
-      .modal {
-        max-width: 95%;
-        max-height: 90vh;
-      }
       #toast { bottom: 40px; }
     }
   </style>
@@ -402,7 +418,7 @@
     <button class="tab-btn" data-tab="stats-section">통계</button>
   </div>
 
-  <!-- 입력 탭 -->
+  <!-- ===== 입력 탭 ===== -->
   <div id="input-section" class="section active">
     <form id="book-form">
       <div class="form-row">
@@ -459,7 +475,7 @@
     </form>
   </div>
 
-  <!-- 기록 탭 -->
+  <!-- ===== 기록 탭 ===== -->
   <div id="list-section" class="section">
     <div class="filters">
       <div class="filters-title">필터</div>
@@ -533,7 +549,7 @@
     <div class="small" id="list-summary"></div>
   </div>
 
-  <!-- 통계 탭 -->
+  <!-- ===== 통계 탭 ===== -->
   <div id="stats-section" class="section">
     <div class="small" style="margin-bottom:8px;">
       ※ 통계는 <strong>완독 날짜</strong> 기준으로 계산됩니다. (완독 날짜가 없는 책은 통계에서 제외)
@@ -573,28 +589,36 @@
     </div>
   </div>
 
-  <!-- 메모 모달 -->
-  <div id="memo-modal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>메모</h2>
-        <div id="memo-book-info" class="small"></div>
-      </div>
+  <!-- ===== 메모 리스트 전체 화면 ===== -->
+  <div id="memo-screen" class="memo-screen">
+    <div class="memo-header">
+      <button type="button" class="memo-header-btn" id="memo-close-btn">✕</button>
+      <div class="memo-header-title">메모</div>
+      <div style="width:32px;"></div>
+    </div>
+    <div class="memo-book-info" id="memo-book-info"></div>
+    <div class="memo-body" id="memo-list-body">
+      <div class="memo-empty" id="memo-empty-text">아직 메모가 없습니다. 아래 버튼으로 새 메모를 추가해 보세요.</div>
+      <div id="memo-list-container"></div>
+    </div>
+    <div class="memo-footer">
+      <button type="button" class="primary" id="memo-new-btn">새 메모</button>
+    </div>
+  </div>
 
-      <div id="memo-list" class="memo-list"></div>
-
-      <textarea id="memo-modal-text"></textarea>
-
-      <div class="btn-row">
-        <div class="modal-left-buttons">
-          <button type="button" class="secondary" id="memo-new-btn">새 메모</button>
-          <button type="button" class="danger" id="memo-delete-btn" style="display:none;">삭제</button>
-        </div>
-        <div>
-          <button type="button" class="secondary" id="memo-cancel-btn">닫기</button>
-          <button type="button" class="primary" id="memo-save-btn">저장</button>
-        </div>
-      </div>
+  <!-- ===== 메모 편집 전체 화면 ===== -->
+  <div id="memo-edit-screen" class="memo-screen">
+    <div class="memo-header">
+      <button type="button" class="memo-header-btn" id="memo-edit-back-btn">←</button>
+      <div class="memo-header-title">메모 편집</div>
+      <button type="button" class="memo-header-btn primary-text" id="memo-edit-save-btn">저장</button>
+    </div>
+    <div class="memo-book-info" id="memo-edit-book-info"></div>
+    <div class="memo-body">
+      <textarea id="memo-edit-text" placeholder="메모를 입력하세요."></textarea>
+    </div>
+    <div class="memo-footer">
+      <button type="button" class="danger" id="memo-edit-delete-btn" style="display:none;">메모 삭제</button>
     </div>
   </div>
 
@@ -638,17 +662,23 @@
     const filterMemo   = document.getElementById("filter-memo");
     const filterResetBtn = document.getElementById("filter-reset-btn");
 
-    const memoModal = document.getElementById("memo-modal");
+    // 메모 전체 화면 관련 요소들
+    const memoScreen = document.getElementById("memo-screen");
     const memoBookInfo = document.getElementById("memo-book-info");
-    const memoListDiv = document.getElementById("memo-list");
-    const memoModalText = document.getElementById("memo-modal-text");
+    const memoCloseBtn = document.getElementById("memo-close-btn");
     const memoNewBtn = document.getElementById("memo-new-btn");
-    const memoDeleteBtn = document.getElementById("memo-delete-btn");
-    const memoCancelBtn = document.getElementById("memo-cancel-btn");
-    const memoSaveBtn = document.getElementById("memo-save-btn");
+    const memoListContainer = document.getElementById("memo-list-container");
+    const memoEmptyText = document.getElementById("memo-empty-text");
 
-    let memoBookIndex = null;
-    let memoCardIndex = null;
+    const memoEditScreen = document.getElementById("memo-edit-screen");
+    const memoEditBackBtn = document.getElementById("memo-edit-back-btn");
+    const memoEditSaveBtn = document.getElementById("memo-edit-save-btn");
+    const memoEditDeleteBtn = document.getElementById("memo-edit-delete-btn");
+    const memoEditText = document.getElementById("memo-edit-text");
+    const memoEditBookInfo = document.getElementById("memo-edit-book-info");
+
+    let memoBookIndex = null;   // 현재 메모를 보고 있는 책 index
+    let memoCardIndex = null;   // 그 책 안에서 몇 번째 메모인지
 
     let toastTimeout;
     function showToast(msg) {
@@ -769,6 +799,7 @@
       return diffDays;
     }
 
+    // 책 객체에 memos 배열을 보장 + 기존 memo 문자열을 1개의 카드로 이관
     function ensureBookMemos(book) {
       if (!book.memos) {
         book.memos = [];
@@ -984,7 +1015,7 @@
         memoBtn.className = "memo-btn " + (hasMemo ? "has-memo" : "no-memo");
         memoBtn.textContent = "📝";
         memoBtn.title = hasMemo ? "메모 있음" : "메모 없음";
-        memoBtn.addEventListener("click", () => openMemoModal(item._index));
+        memoBtn.addEventListener("click", () => openMemoListScreen(item._index));
         tdMemo.appendChild(memoBtn);
         tr.appendChild(tdMemo);
 
@@ -995,7 +1026,9 @@
       listSummary.textContent = `총 ${books.length}권 기록됨 (이 중 완독 ${finishedCount}권, 필터 결과 ${filtered.length}권)`;
     }
 
-    function openMemoModal(bookIndex) {
+    /* ===== 메모 리스트/편집 화면 로직 ===== */
+
+    function openMemoListScreen(bookIndex) {
       const books = loadBooks();
       const book = books[bookIndex];
       if (!book) return;
@@ -1008,81 +1041,94 @@
       saveBooks(books);
 
       memoBookInfo.textContent = `${book.title}${book.author ? " · " + book.author : ""}`;
+      renderMemoListFull(memos);
 
-      if (memos.length > 0) {
-        memoCardIndex = 0;
-        memoModalText.value = memos[0];
-        memoDeleteBtn.style.display = "inline-block";
-      } else {
-        memoCardIndex = null;
-        memoModalText.value = "";
-        memoDeleteBtn.style.display = "none";
-      }
-
-      renderMemoCards(memos);
-      memoModal.classList.add("active");
-      document.body.classList.add("modal-open");   // 배경 스크롤 막기
-      memoModalText.focus();
+      memoEditScreen.classList.remove("active");
+      memoScreen.classList.add("active");
+      document.body.classList.add("modal-open");
     }
 
-    function renderMemoCards(memos) {
-      memoListDiv.innerHTML = "";
+    function renderMemoListFull(memos) {
+      memoListContainer.innerHTML = "";
       if (!memos || memos.length === 0) {
-        const empty = document.createElement("div");
-        empty.className = "memo-card-empty";
-        empty.textContent = "아직 메모가 없습니다. 아래에 내용을 입력하고 저장해 보세요.";
-        memoListDiv.appendChild(empty);
+        memoEmptyText.style.display = "block";
         return;
       }
+      memoEmptyText.style.display = "none";
 
       memos.forEach((text, idx) => {
         const card = document.createElement("div");
-        card.className = "memo-card" + (idx === memoCardIndex ? " active" : "");
-        const preview = document.createElement("span");
-        preview.className = "memo-card-preview";
-        const oneLine = String(text || "").replace(/\s+/g, " ").trim();
-        preview.textContent = oneLine || "(내용 없음)";
-        card.appendChild(preview);
+        card.className = "memo-card-full";
+        const p = document.createElement("p");
+        p.textContent = text || "";
+        card.appendChild(p);
 
         card.addEventListener("click", () => {
-          memoCardIndex = idx;
-          memoModalText.value = text;
-          memoDeleteBtn.style.display = "inline-block";
-          renderMemoCards(memos);
+          openMemoEditScreen(idx);
         });
 
-        memoListDiv.appendChild(card);
+        memoListContainer.appendChild(card);
       });
     }
 
-    function closeMemoModal() {
-      memoModal.classList.remove("active");
-      document.body.classList.remove("modal-open"); // 배경 스크롤 다시 허용
+    function closeAllMemoScreens() {
+      memoScreen.classList.remove("active");
+      memoEditScreen.classList.remove("active");
+      document.body.classList.remove("modal-open");
       memoBookIndex = null;
       memoCardIndex = null;
-      memoModalText.value = "";
-      memoBookInfo.textContent = "";
-      memoListDiv.innerHTML = "";
-      memoDeleteBtn.style.display = "none";
+      memoEditText.value = "";
     }
 
-    memoCancelBtn.addEventListener("click", closeMemoModal);
+    memoCloseBtn.addEventListener("click", closeAllMemoScreens);
 
     memoNewBtn.addEventListener("click", () => {
-      if (memoBookIndex == null) return;
-      memoCardIndex = null;
-      memoModalText.value = "";
-      memoDeleteBtn.style.display = "none";
+      openMemoEditScreen(null);
+    });
 
+    function openMemoEditScreen(index) {
+      if (memoBookIndex == null) return;
       const books = loadBooks();
       const book = books[memoBookIndex];
       if (!book) return;
+
       const memos = ensureBookMemos(book);
-      renderMemoCards(memos);
-      memoModalText.focus();
+
+      memoCardIndex = index;
+      memoEditBookInfo.textContent = memoBookInfo.textContent;
+
+      if (index == null) {
+        memoEditText.value = "";
+        memoEditDeleteBtn.style.display = "none";
+      } else {
+        memoEditText.value = memos[index] || "";
+        memoEditDeleteBtn.style.display = "inline-block";
+      }
+
+      memoScreen.classList.remove("active");
+      memoEditScreen.classList.add("active");
+      document.body.classList.add("modal-open");
+      memoEditText.focus();
+    }
+
+    memoEditBackBtn.addEventListener("click", () => {
+      if (memoBookIndex == null) {
+        closeAllMemoScreens();
+        return;
+      }
+      const books = loadBooks();
+      const book = books[memoBookIndex];
+      if (!book) {
+        closeAllMemoScreens();
+        return;
+      }
+      const memos = ensureBookMemos(book);
+      renderMemoListFull(memos);
+      memoEditScreen.classList.remove("active");
+      memoScreen.classList.add("active");
     });
 
-    memoDeleteBtn.addEventListener("click", () => {
+    memoEditDeleteBtn.addEventListener("click", () => {
       if (memoBookIndex == null || memoCardIndex == null) return;
       if (!confirm("이 메모를 삭제할까요?")) return;
 
@@ -1097,17 +1143,19 @@
       books[memoBookIndex] = book;
       saveBooks(books);
 
-      memoCardIndex = null;
-      memoModalText.value = "";
-      memoDeleteBtn.style.display = "none";
-      renderMemoCards(memos);
-      renderList();
       showToast("메모가 삭제되었습니다.");
+      memoCardIndex = null;
+      memoEditText.value = "";
+
+      renderMemoListFull(memos);
+      memoEditScreen.classList.remove("active");
+      memoScreen.classList.add("active");
+      renderList();
     });
 
-    memoSaveBtn.addEventListener("click", () => {
+    memoEditSaveBtn.addEventListener("click", () => {
       if (memoBookIndex == null) return;
-      const text = memoModalText.value.trim();
+      const text = memoEditText.value.trim();
 
       const books = loadBooks();
       const book = books[memoBookIndex];
@@ -1118,6 +1166,11 @@
         if (memoCardIndex != null) {
           memos.splice(memoCardIndex, 1);
           memoCardIndex = null;
+        } else {
+          // 새 메모인데 내용이 없으면 그냥 돌아가기
+          showToast("내용이 없습니다.");
+          memoEditText.focus();
+          return;
         }
       } else if (memoCardIndex == null) {
         memos.push(text);
@@ -1131,10 +1184,14 @@
       books[memoBookIndex] = book;
       saveBooks(books);
 
-      renderMemoCards(memos);
-      renderList();
       showToast("메모가 저장되었습니다.");
+      renderMemoListFull(memos);
+      memoEditScreen.classList.remove("active");
+      memoScreen.classList.add("active");
+      renderList();
     });
+
+    /* ===== 수정 모드 진입 / 삭제 ===== */
 
     function startEdit(index) {
       const books = loadBooks();
@@ -1272,6 +1329,7 @@
       }
     }
 
+    // 초기 렌더
     renderList();
   </script>
 </body>
