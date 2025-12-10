@@ -17,6 +17,10 @@
       --text-muted: #667085;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       max-width: 900px;
@@ -267,7 +271,7 @@
       color: var(--primary-strong);
     }
 
-    /* ===== 메모 전체 화면 (리스트 / 편집) - 블루 톤 ===== */
+    /* ===== 메모 전체 화면 (리스트 / 편집) ===== */
     .memo-screen {
       position: fixed;
       inset: 0;
@@ -330,11 +334,11 @@
     /* 메모 카드 - 메모지 느낌 */
     .memo-card-full {
       position: relative;
-      padding: 14px 10px 10px;
+      padding: 16px 12px 12px;
       border-radius: 12px;
       background: #ffffff;
       border: 1px dashed #c5d6ff;
-      margin-bottom: 8px;
+      margin-bottom: 14px; /* 카드 간 여유 */
       box-shadow: 0 2px 5px rgba(79,141,245,0.08);
       cursor: pointer;
     }
@@ -352,10 +356,11 @@
     .memo-card-full p {
       margin: 0;
       white-space: pre-line;
-      max-height: 8em; /* 너무 길면 뒤는 잘림 */
+      max-height: 9.6em; /* 줄간격 늘린 만큼 조금 키움 */
       overflow: hidden;
       color: #111827;
-      font-size: 0.9rem;
+      font-size: 0.96rem;   /* 살짝 크게 */
+      line-height: 1.6;      /* 줄간격 넓게 */
     }
     .memo-card-full:hover {
       background: #f7f9ff;
@@ -373,11 +378,13 @@
       width: 100%;
       border-radius: 12px;
       border: 1px solid var(--border);
-      padding: 8px 10px;
-      font-size: 0.9rem;
+      padding: 10px 11px;
+      font-size: 0.96rem;   /* 리스트랑 맞춤 */
+      line-height: 1.6;
       min-height: 260px;
       resize: none;
       background: #f7f9ff;
+      box-sizing: border-box; /* 가로 스크롤 방지 */
     }
     #memo-edit-text:focus {
       outline: none;
